@@ -18,6 +18,12 @@ VARIABLE sprite#
   DUP  sprites  #sprites /sprite *  ROT  READ-FILE ABORT" Error reading sprites" DROP
   CLOSE-FILE ABORT" Error closing sprite file" ;
 
+
+\ sprite commands
+: >sprite        ( u -- addr )  /sprite * SRAM + ;
+: copy-sprite  ( a b -- )       >sprite SWAP >sprite SWAP /sprite MOVE ;
+
+
 \ editor
 : paint-pixel  ( x y -- )  color# @  -ROT  sprite# @ sp! ;
 : clear-pixel  ( x y -- )         0  -ROT  sprite# @ sp! ;
