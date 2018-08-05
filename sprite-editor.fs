@@ -89,10 +89,11 @@ VARIABLE sprite#
 : spritesheet
   ( bg @ ) 3 96 0 32 8 * 16 8 * rect
   16 0 DO
-    32 0 DO
-      96 I 8 * +  J 8 *   J 8 * I +  spr
+    16 0 DO
+      96 I 8 * +  J 8 *   J 16 * I +  spr
     LOOP
-  LOOP ;
+  LOOP
+;
 
 : sspr  ( scale u x y -- )
   { scale u x y }
