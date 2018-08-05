@@ -1,1 +1,4 @@
 *.o
+TAGS
+/ficl/ficl
+/ficl/libficl.a
