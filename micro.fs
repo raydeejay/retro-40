@@ -139,8 +139,8 @@ VARIABLE startx
 
 \ initialization
 : init-player  ( -- )
-    16e  x F!
-    16e  y F!
+   16e  x F!
+   16e  y F!
     0e dx F!
     0e dy F!
      0 grounded? !
