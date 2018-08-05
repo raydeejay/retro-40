@@ -1,3 +1,43 @@
+\ micro.fs
+
+\ this is a Forth/Ficl/Retro-40 port
+\ of my S7/Scheme/lambda8 port
+\ of Matt Hughson's (@mhughson) TIC-80 port
+\ of his Pico-8 Micro Platformer Starter Kit tech demo
+
+\ the original introduction, complete with
+\ its header, follows:
+
+\  title:  Micro-Platformer Starter Kit
+\  author: Matt Hughson (@mhughson)
+\  desc:   Platforming engine in ~100 lines of code.
+\  script: lua
+
+\  the goal of this cart is to
+\  demonstrate a very basic platforming
+\  engine in under 100 lines of *code*,
+\  while still maintaining an organized
+\  and documented game.
+\
+\  it isn't meant to be a demo of doing
+\  as much as possible, in as little
+\  code as possible.  the 100 line limit
+\  is just meant to encourage people
+\  that "hey, you can make a game' with
+\  very little coding!"
+\
+\  this will hopefully give new users a
+\  simple and easy to understand
+\  starting point for their own
+\  platforming games.
+\
+\  NOTE: collision routine is based on
+\  mario bros 2 and mckids, where we use
+\  collision points rather than a box.
+\  this has some interesting bugs but if
+\  it was good enough for miyamoto, its
+\  good enough for me!
+
 CREATE mapbytes
 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
 1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
