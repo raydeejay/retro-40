@@ -1,5 +1,5 @@
 \ screen
-2 CONSTANT scale
+8 CONSTANT scale
 W scale / CONSTANT width
 H scale / CONSTANT height
 
@@ -122,10 +122,10 @@ VARIABLE apple-c
 : turn-right     ( -- )  is-vertical   IF  right direction !  THEN ;
 
 : change-direction  ( -- )
-  SCANCODE_A just-pressed? IF turn-left  EXIT THEN
-  SCANCODE_W just-pressed? IF turn-up    EXIT THEN
-  SCANCODE_D just-pressed? IF turn-right EXIT THEN
-  SCANCODE_S just-pressed? IF turn-down  EXIT THEN
+  SCANCODE_A pressed? tick @ 0= AND IF turn-left  EXIT THEN
+  SCANCODE_W pressed? tick @ 0= AND IF turn-up    EXIT THEN
+  SCANCODE_D pressed? tick @ 0= AND IF turn-right EXIT THEN
+  SCANCODE_S pressed? tick @ 0= AND IF turn-down  EXIT THEN
   SCANCODE_Q just-pressed? IF retro-40   EXIT THEN
 ;
 
@@ -137,16 +137,15 @@ VARIABLE apple-c
 
 \ entry point
 : <update>
-  1 tick +!
-  tick @ 4 > IF
-    0 tick !
-    check-input
+  check-input
+  tick @ 0= IF
+    3 tick !
     update-snake-tail
     update-snake-head
     check-apple
     check-collision IF retro-40 THEN
   ELSE
-    1 tick +!
+    -1 tick +!
   THEN
 ;
 
