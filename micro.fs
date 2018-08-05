@@ -38,6 +38,9 @@
 \  it was good enough for miyamoto, its
 \  good enough for me!
 
+17 ficl-vocabulary micro-platformer
+also micro-platformer definitions
+
 CREATE mapbytes
 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
 1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
@@ -158,4 +161,10 @@ VARIABLE startx
 
 : <draw>  ( -- )  0 cls  map  x F@ F>S y F@ F>S 0 spr  s" v1.0 2016 - @matthughson" 15 0 0 PUTS ;
 
+PREVIOUS DEFINITIONS
+
+ALSO micro-platformer
+
 INSTALL micro
+
+PREVIOUS
