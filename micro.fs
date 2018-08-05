@@ -114,6 +114,6 @@ VARIABLE startx
 
 : <update>  ( -- )  ?jump  walk  move  ?pushback  accumulate-gravity  fall  ?hit-floor  ?hit-ceiling ;
 
-: <draw>  ( -- )  0 cls  map  x F@ F>S y F@ F>S 0 spr ;
+: <draw>  ( -- )  0 cls  map  x F@ F>S y F@ F>S 0 spr  s" v1.0 2016 - @matthughson" 15 0 0 PUTS ;
 
 INSTALL micro
