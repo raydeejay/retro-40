@@ -152,7 +152,9 @@ VARIABLE startx
   initmap init-player
 ;
 
-: <update>  ( -- )  ?jump  walk  move  ?pushback  accumulate-gravity  fall  ?hit-floor  ?hit-ceiling ;
+: ?exit  ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
+
+: <update>  ( -- )  ?jump  walk  move  ?pushback  accumulate-gravity  fall  ?hit-floor  ?hit-ceiling  ?exit ;
 
 : <draw>  ( -- )  0 cls  map  x F@ F>S y F@ F>S 0 spr  s" v1.0 2016 - @matthughson" 15 0 0 PUTS ;
 
