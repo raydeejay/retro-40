@@ -1,0 +1,211 @@
+\ ** 
+\ ** win32.fr
+\ ** submitted by Larry Hastings, larry@hastings.org
+\ **
+
+
+S" FICL_PLATFORM_OS" ENVIRONMENT? drop S" WIN32" compare-insensitive 0= [if]
+
+
+: GetProcAddress ( name-addr name-u hmodule -- address )
+	3 \ argumentCount
+	0 \ floatArgumentBitfield
+	2 \ cstringArgumentBitfield
+	(get-proc-address) \ functionAddress
+	[
+	multicall-calltype-function multicall-returntype-integer or literal \ flags
+	]
+	multicall ;
+
+
+: LoadLibrary ( name-addr name-u -- hmodule )
+	2 \ argumentCount
+	0 \ floatArgumentBitfield
+	1 \ cstringArgumentBitfield
+	[
+	S" LoadLibraryA" kernel32.dll GetProcAddress literal \ functionAddress
+	multicall-calltype-function multicall-returntype-integer or literal \ flags
+	]
+	multicall ;
+
+
+: FreeLibrary ( hmodule -- success )
+	1 \ argumentCount
+	0 \ floatArgumentBitfield
+	0 \ cstringArgumentBitfield
+	[
+	S" FreeLibrary" kernel32.dll GetProcAddress literal \ functionAddress
+	multicall-calltype-function multicall-returntype-integer or literal \ flags
+	]
+	multicall ;
+
+
+: DebugBreak ( -- )
+	0 \ argumentCount
+	0 \ floatArgumentBitfield
+	0 \ cstringArgumentBitfield
+	[
+	S" DebugBreak" kernel32.dll GetProcAddress literal \ functionAddress
+	multicall-calltype-function multicall-returntype-void or literal \ flags
+	]
+	multicall ;
+
+: OutputDebugString ( addr u -- )
+	2 \ argumentCount
+	0 \ floatArgumentBitfield
+	1 \ cstringArgumentBitfield
+	[
+	S" OutputDebugStringA" kernel32.dll GetProcAddress literal \ functionAddress
+	multicall-calltype-function multicall-returntype-void or literal \ flags
+	]
+	multicall ;
+
+: GetTickCount ( -- ticks )
+	0 \ argumentCount
+	0 \ floatArgumentBitfield
+	0 \ cstringArgumentBitfield
+	[
+	S" GetTickCount" kernel32.dll GetProcAddress literal \ functionAddress
+	multicall-calltype-function multicall-returntype-integer or literal \ flags
+	]
+	multicall ;
+
+S" user32.dll" LoadLibrary constant user32.dll
+
+: MessageBox ( flags title-addr title-u body-addr body-u hwnd -- button )
+	6 \ argumentCount
+	0 \ floatArgumentBitfield
+	[
+	2 8 or literal \ cstringArgumentBitfield
+	S" MessageBoxA" user32.dll GetProcAddress literal \ functionAddress
+	multicall-calltype-function multicall-returntype-integer or literal \ flags
+	]
+	multicall ;
+
+
+\ Constants for use with MessageBox
+\ the ID* names are possible return values.
+
+0x00000000 constant MB_OK
+0x00000001 constant MB_OKCANCEL                 
+0x00000002 constant MB_ABORTRETRYIGNORE         
+0x00000003 constant MB_YESNOCANCEL              
+0x00000004 constant MB_YESNO                    
+0x00000005 constant MB_RETRYCANCEL              
+0x00000010 constant MB_ICONHAND                 
+0x00000020 constant MB_ICONQUESTION             
+0x00000030 constant MB_ICONEXCLAMATION          
+0x00000040 constant MB_ICONASTERISK             
+0x00000080 constant MB_USERICON                 
+0x00000000 constant MB_DEFBUTTON1               
+0x00000100 constant MB_DEFBUTTON2               
+0x00000200 constant MB_DEFBUTTON3               
+0x00000300 constant MB_DEFBUTTON4               
+0x00000000 constant MB_APPLMODAL                
+0x00001000 constant MB_SYSTEMMODAL              
+0x00002000 constant MB_TASKMODAL                
+0x00004000 constant MB_HELP                     
+0x00008000 constant MB_NOFOCUS                  
+0x00010000 constant MB_SETFOREGROUND            
+0x00020000 constant MB_DEFAULT_DESKTOP_ONLY     
+0x00040000 constant MB_TOPMOST                  
+0x00080000 constant MB_RIGHT                    
+0x00100000 constant MB_RTLREADING               
+
+MB_ICONEXCLAMATION constant MB_ICONWARNING              
+MB_ICONHAND        constant MB_ICONERROR                
+MB_ICONASTERISK    constant MB_ICONINFORMATION          
+MB_ICONHAND        constant MB_ICONSTOP                 
+
+
+0x00200000 constant MB_SERVICE_NOTIFICATION          
+0x00040000 constant MB_SERVICE_NOTIFICATION          
+0x00040000 constant MB_SERVICE_NOTIFICATION_NT3X     
+
+0x0000000F constant MB_TYPEMASK                 
+0x000000F0 constant MB_ICONMASK                 
+0x00000F00 constant MB_DEFMASK                  
+0x00003000 constant MB_MODEMASK                 
+0x0000C000 constant MB_MISCMASK                 
+
+
+1 constant IDOK                
+2 constant IDCANCEL            
+3 constant IDABORT             
+4 constant IDRETRY             
+5 constant IDIGNORE            
+6 constant IDYES               
+7 constant IDNO                
+8 constant IDCLOSE         
+9 constant IDHELP          
+
+
+\ ** old names
+: output-debug-string OutputDebugString ;
+: debug-break DebugBreak ;
+
+
+: uaddr->cstring { addr u | cstring -- cstring }
+	u 1+  allocate
+	0= if
+		to cstring
+		addr cstring u move
+		0  cstring u + c!
+		cstring
+	else
+		0
+	endif
+	;
+
+\ **
+\ ** The following four calls:
+\ **    callnativeFunction
+\ **    callcFunction
+\ **    callpascalFunction
+\ **    vcall
+\ ** are deprecated.  Please use the more powerful "multicall" instead.
+\ **
+
+\ ** My original native function caller, reimplemented in Ficl using multicall.
+: callnativeFunction { functionAddress popStack -- }
+	0 \ floatArgumentBitfield
+	0 \ cstringArgumentBitfield
+	functionAddress \ functionAddress
+
+	[
+	multicall-calltype-function
+	multicall-returntype-integer or
+	multicall-reverse-arguments or
+	literal
+	]
+
+	multicall
+	;
+
+
+\ ** simple wrappers for callnativeFunction that specify the calling convention
+: callcfunction 1 callnativeFunction ;
+: callpascalfunction 0 callnativeFunction ;
+
+
+\ ** Guy Carver's "vcall" function, reimplemented in Ficl using multicall.
+: vcall { argumentCount index -- }
+	argumentCount 0x80000000 invert or  \ cleaned-up argumentCount
+	0 \ cstringArgumentBitfield
+	0 \ cstringFlags
+	index \ index
+
+	\ flags:
+	argumentCount 0x80000000 and if multicall-returntype-integer else multicall-returntype-void endif
+	
+	[
+	multicall-calltype-virtual-method
+	multicall-reverse-arguments or
+	literal
+	] or
+
+	multicall
+	;
+
+[endif]
+
