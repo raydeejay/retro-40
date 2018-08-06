@@ -289,9 +289,8 @@ void R40ImportSprite(ficlVm *vm) {
 
     for (int y = 0; y < 8; ++y) {
         for (int x = 0; x < 8; ++x) {
-            int pos = n*8*8 + y*8 + x;
+            int pos = n/16*16*8*8  + y*16*8 + n%16*8 + x;
             gSRAM[pos] = ((unsigned char*) surf->pixels)[y*8+x];
-            printf("%d\n", ((unsigned char*) surf->pixels)[y*8+x]);
         }
     }
 
