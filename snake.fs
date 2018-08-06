@@ -1,4 +1,8 @@
 \ screen
+
+17 ficl-vocabulary snake-voc
+also snake-voc definitions
+
 8 CONSTANT scale
 W scale / CONSTANT width
 H scale / CONSTANT height
@@ -154,4 +158,11 @@ VARIABLE apple-c
   draw-apple
  ;
 
+PREVIOUS DEFINITIONS
+
+ALSO snake-voc
+
 INSTALL snake
+
+PREVIOUS
+
