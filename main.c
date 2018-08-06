@@ -148,7 +148,7 @@ void myclose()
 int main(int argc, char* argv[]) {
     ficlSystem *system = ficlSystemCreate(NULL);
     ficlVm *vm = ficlSystemCreateVm(system);
-    ficlDictionary *dictionary = ficlSystemGetDictionary(system);
+//    ficlDictionary *dictionary = ficlSystemGetDictionary(system);
 
     //Start up SDL and create window
     if (!init())
@@ -219,7 +219,6 @@ int main(int argc, char* argv[]) {
 
                             system = ficlSystemCreate(NULL);
                             vm = ficlSystemCreateVm(system);
-                            dictionary = ficlSystemGetDictionary(system);
 
                             initMachineForth(system, vm, keys, lastkeys);
                         }
