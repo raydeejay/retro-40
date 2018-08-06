@@ -27,20 +27,14 @@ VARIABLE sprite#
 VARIABLE mapx
 VARIABLE mapy
 
-\ I/O
-: save-map  ( addr u -- )
-  R/W BIN CREATE-FILE ABORT" Error opening map file"
-  DUP  MRAM  #map  ROT  WRITE-FILE ABORT" Error writing map"
-  CLOSE-FILE ABORT" Error closing map file" ;
-
-: load-map  ( addr u -- )
-  R/O BIN OPEN-FILE ABORT" Error opening map file"
-  DUP  MRAM  #map  ROT  READ-FILE ABORT" Error reading map" DROP
-  CLOSE-FILE ABORT" Error closing map file" ;
 
 \ editor
-: +sprite           ( -- )    sprite# @ 1+ 256 MOD  sprite# ! ;
-: -sprite           ( -- )    sprite# @ 1- 256 MOD  sprite# ! ;
+: +sprite  ( -- )   sprite# @ 1+ 256 MOD  sprite# ! ;
+: -sprite  ( -- )   sprite# @ 1- 256 MOD  sprite# ! ;
+: +mapx    ( -- )   mapx @ 1+ 256 32 - MOD  mapx ! ;
+: -mapx    ( -- )   mapx @ 1- 256 32 - MOD  0 MAX mapx ! ;
+: +mapy    ( -- )   mapy @ 1+ 192 24 - MOD  mapy ! ;
+: -mapy    ( -- )   mapy @ 1- 192 24 - MOD  0 MAX mapy ! ;
 
 : toggle-hud  ( -- )  hud? NOT TO hud? ;
 
@@ -49,8 +43,8 @@ VARIABLE mapy
 
 : update-mouse  ( -- )
   MOUSEB @ CASE
-    1 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  paint-tile  ENDOF
-    4 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  clear-tile  ENDOF
+    1 OF  MOUSEX @ 8 / mapx @ +  MOUSEY @ 8 / mapy @ +  paint-tile  ENDOF
+    4 OF  MOUSEX @ 8 / mapx @ +  MOUSEY @ 8 / mapy @ +  clear-tile  ENDOF
   ENDCASE
 ;
 
@@ -64,6 +58,10 @@ VARIABLE mapy
 ;
 
 : update-keys  ( -- )
+  SCANCODE_W  just-pressed?  IF  -mapy  THEN
+  SCANCODE_S  just-pressed?  IF  +mapy  THEN
+  SCANCODE_A  just-pressed?  IF  -mapx  THEN
+  SCANCODE_D  just-pressed?  IF  +mapx  THEN
   SCANCODE_H  just-pressed?  IF  toggle-hud  THEN
   SCANCODE_M  just-pressed?  IF  +sprite  THEN
   SCANCODE_N  just-pressed?  IF  -sprite  THEN
@@ -87,7 +85,7 @@ VARIABLE mapy
   LOOP
 ;
 
-: map-display      0 0 map ;
+: map-display      mapx @ mapy @ map ;
 
 : <draw>
   0 cls
