@@ -7,11 +7,6 @@ CREATE cmdline' 64 ALLOT
 
 0 VALUE tick
 
-\  0 VALUE sx
-\  0 VALUE sy
-\ 15 VALUE sc
-\  0 VALUE sb
-
 \ terminal code
 : PUT  ( c color x y -- )  3 ROLL  @font  3 -ROLL  udgput ;
 
@@ -130,14 +125,6 @@ CREATE cmdline' 64 ALLOT
   cmdline cmdlen TYPE
   tick 50 < IF undraw-cursor ELSE draw-cursor THEN
 ;
-
-\ INSTALL retro-40
-
-
-\ : boot sdl-init retro-40 run ;
-
-\ this does weird things when the file is included...
-\ BOOT
 
 
 \ this word starts the system, and will restart it when invoked
