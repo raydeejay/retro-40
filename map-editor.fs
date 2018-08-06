@@ -43,7 +43,7 @@ VARIABLE sprite#
 
 : update-mouse-hud  ( -- )
   MOUSEB @ CASE
-    1 OF  MOUSEX @  MOUSEY @ palette-area? IF  2DUP clicked-sprite sprite# !  THEN  ENDOF
+    1 OF  MOUSEX @  MOUSEY @ palette-area? IF  MOUSEX @  MOUSEY @  clicked-sprite sprite# !  THEN  ENDOF
   ENDCASE
 ;
 
