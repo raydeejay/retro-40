@@ -20,8 +20,16 @@ VARIABLE sprite#
 
 
 \ sprite commands
-: >sprite        ( u -- addr )  /sprite * SRAM + ;
-: copy-sprite  ( a b -- )       >sprite SWAP >sprite SWAP /sprite MOVE ;
+: >sprite        ( u -- addr )  DUP 16 / W *  SWAP  16 MOD 8 * +  SRAM + ;
+: copy-sprite  ( src dst -- )
+  >sprite SWAP >sprite SWAP
+  8 0 DO
+    2DUP
+    8 MOVE
+    16 8 * + SWAP 16 8 * + SWAP
+  LOOP
+  2DROP
+;
 
 
 \ editor
