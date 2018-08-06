@@ -27,6 +27,57 @@ VARIABLE color#
 : paint-pixel  ( x y -- )  color# @  -ROT  last-coords 2@  2SWAP line ;
 : clear-pixel  ( x y -- )         0  -ROT  last-coords 2@  2SWAP line ;
 
+0 VALUE stack
+0 VALUE stack-start
+0 VALUE stack-end
+
+: alloc-stack   ( -- )  16384 CELLS ALLOCATE ABORT" Error allocating floodfill stack" TO stack ;
+: empty-stack   ( -- )  stack TO stack-start  stack TO stack-end ;
+: free-stack    ( -- )  stack FREE ABORT" Error freeing floodfill stack" ;
+
+: append   ( x y -- )  stack-end       !  stack-end CELL+     !  stack-end 2 CELLS+ TO stack-end ;
+: fetch    ( -- x y )  stack-end CELL- @  stack-end 2 CELLS- @  stack-end 2 CELLS- TO stack-end ;
+
+\ this can probably be factored and better optimised :-)
+: flood-fill  ( x y c c'-- )
+  { x y c c' | above below }
+  c c' = IF EXIT THEN
+  x y P@ c <> IF EXIT THEN
+  alloc-stack
+  empty-stack
+  x y append
+  BEGIN
+    stack-end stack-start >
+  WHILE
+    fetch  TO y  TO x
+    BEGIN  x 0 >=  x y P@ c =  AND  WHILE  x 1- TO x  REPEAT
+    x 1+ TO x
+    0 TO above  0 TO below
+    BEGIN
+      x W <  x y P@ c =  AND
+    WHILE
+      c' x y P!
+      above 0=  y 0>  x y 1- p@ c =  AND AND IF
+        x y 1- append
+        1 TO above
+      ELSE
+        above 0<>  y 0>  x y 1- p@ c =  AND AND IF THEN
+        0 TO above
+      THEN
+
+      below 0=  y H 1- <  x y 1+ p@ c =  AND AND IF
+        x y 1+ append
+        1 TO below
+      ELSE
+        below 0<>  y 0>  x y 1+ p@ c =  AND AND IF THEN
+        0 TO below
+      THEN
+      x 1+ TO x
+    REPEAT
+  REPEAT
+  free-stack
+;
+
 : toggle-hud  ( -- )  VRAM image hud?  DUP NOT TO hud?  IF SWAP THEN  W H * MOVE ;
 
 : update-mouse  ( -- )
@@ -52,6 +103,7 @@ VARIABLE color#
 
 
 : update-keys  ( -- )
+  SCANCODE_F just-pressed?  IF  MOUSEX @ MOUSEY @ 2DUP P@ color# @ flood-fill  THEN
   SCANCODE_H just-pressed?  IF  toggle-hud  THEN
   SCANCODE_C just-pressed?  IF  -color      THEN
   SCANCODE_V just-pressed?  IF  +color      THEN
