@@ -1,18 +1,28 @@
+\ map-editor.fs
+
+17 ficl-vocabulary map-editor-voc
+also map-editor-voc definitions
+
+\ variables and initialisation/shutdown
+0 VALUE image
+0 VALUE hud?
+
 VARIABLE cursorx
 VARIABLE cursory
 VARIABLE sprite#
+2VARIABLE last-coords
 
-: #map 32 24 * ;
+: #map W H * ;
 
 \ I/O
 : save-map  ( addr u -- )
   R/W BIN CREATE-FILE ABORT" Error opening map file"
-  DUP  MRAM  #map /sprite *  ROT  WRITE-FILE ABORT" Error writing map"
+  DUP  MRAM  #map  ROT  WRITE-FILE ABORT" Error writing map"
   CLOSE-FILE ABORT" Error closing map file" ;
 
 : load-map  ( addr u -- )
   R/O BIN OPEN-FILE ABORT" Error opening map file"
-  DUP  MRAM  #map /sprite *  ROT  READ-FILE ABORT" Error reading map" DROP
+  DUP  MRAM  #map  ROT  READ-FILE ABORT" Error reading map" DROP
   CLOSE-FILE ABORT" Error closing map file" ;
 
 \ editor
@@ -22,31 +32,40 @@ VARIABLE sprite#
 : sprite-area?  ( x y -- f )  48 56 WITHIN  SWAP  80 88 WITHIN  AND ;
 : +sprite           ( -- )    sprite# @ 1+ 256 MOD  sprite# ! ;
 : -sprite           ( -- )    sprite# @ 1- 256 MOD  sprite# ! ;
-                    
+
+: toggle-hud  ( -- )  hud? NOT TO hud? ;
+
 : update-mouse  ( -- )
-    MOUSEB @ CASE
-      1 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  paint-tile  ENDOF
-      4 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  clear-tile  ENDOF
-    ENDCASE
+  MOUSEB @ CASE
+    1 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  paint-tile  ENDOF
+    4 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  clear-tile  ENDOF
+  ENDCASE
+;
+
+: palette-area?  ( x y -- f )  72 104 WITHIN  SWAP   0 32 WITHIN  AND ;
+: clicked-sprite  ( x y -- u )  72 - 8 / 4 *  SWAP 8 / +  ;
+
+: update-mouse-hud  ( -- )
+  MOUSEX @  MOUSEY @
+  MOUSEB @ CASE
+    1 OF  2DUP palette-area? IF  2DUP clicked-sprite sprite# !  THEN  ENDOF
+  ENDCASE
+  last-coords 2!
 ;
 
 : update-keys  ( -- )
-  SCANCODE_W     just-pressed?  IF  cursory @ 1- 8 MOD  DUP 0< IF DROP 7 THEN  cursory ! THEN
-  SCANCODE_S     just-pressed?  IF  cursory @ 1+ 8 MOD  DUP 0< IF DROP 7 THEN  cursory ! THEN
-  SCANCODE_A     just-pressed?  IF  cursorx @ 1- 8 MOD  DUP 0< IF DROP 7 THEN  cursorx ! THEN
-  SCANCODE_D     just-pressed?  IF  cursorx @ 1+ 8 MOD  DUP 0< IF DROP 7 THEN  cursorx ! THEN
-  SCANCODE_C     just-pressed?  IF  +sprite  THEN
-  SCANCODE_V     just-pressed?  IF  -sprite  THEN
-  SCANCODE_N     just-pressed?  IF  sprite# @ 1- #map MOD  sprite#  ! THEN
-  SCANCODE_M     just-pressed?  IF  sprite# @ 1+ #map MOD  sprite#  ! THEN
-  SCANCODE_F1    just-pressed?  IF  s" default.map" save-map THEN
-  SCANCODE_F2    just-pressed?  IF  s" default.map" load-map THEN
-  SCANCODE_F4    just-pressed?  IF  map 64 dump CR THEN
-  SCANCODE_SPACE just-pressed?  IF  cursorx @ cursory @ paint-tile THEN
-  SCANCODE_Q     just-pressed?  IF  retro-40  THEN
+  SCANCODE_H  just-pressed?  IF  toggle-hud  THEN
+  SCANCODE_M  just-pressed?  IF  +sprite  THEN
+  SCANCODE_N  just-pressed?  IF  -sprite  THEN
+  SCANCODE_F1 just-pressed?  IF  s" default.map" save-map THEN
+  SCANCODE_F2 just-pressed?  IF  s" default.map" load-map THEN
+  SCANCODE_Q  just-pressed?  IF  retro-40  THEN
 ;
 
-: <update>  ( -- )  update-mouse update-keys ;
+: <update>  ( -- )
+  hud? IF  update-mouse-hud  ELSE  update-mouse  THEN
+  update-keys
+;
 
 : mapheet
   ( bg @ ) 3 96 0 32 8 * 16 8 * rect
@@ -68,9 +87,9 @@ VARIABLE sprite#
 : palette-display
   4 0 DO
     4 0 DO
-      J 4 * I +
-      0 J 8 * +  72 I 8 * +
-      8 8 rect
+      0 I 8 * +  72 J 8 * +
+      J 4 * I + spr
+      J 4 * I +  sprite# @ = IF  15  0 I 8 * +  72 J 8 * +  8 8 rectb THEN
     LOOP
   LOOP
 ;
@@ -81,13 +100,25 @@ VARIABLE sprite#
 : sprite-display    sprite# @ 80 48 8 8 rect ;
 
 : <draw>
-\  palette-display
+  0 cls
 \  zoomed-display
   map-display
 \  sprite-display
-\  cursor-display
+  \  cursor-display
+  hud? IF
+    0 0 72 32 32 rect
+    palette-display
+  THEN
 ;
 
 : <init>  0 cls  1 sprite# ! ;
 
+
+\ install the software
+PREVIOUS DEFINITIONS
+
+ALSO map-editor-voc
+
 INSTALL map-editor
+
+PREVIOUS
