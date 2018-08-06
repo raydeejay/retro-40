@@ -66,9 +66,9 @@ VARIABLE color#
 : palette-display
   4 0 DO
     4 0 DO
-      I 4 * J +
-      0 J 8 * +  72 I 8 * +
-      8 8 rect
+      I 4 * J +  DUP
+      0 J 8 * +  72 I 8 * +  8 8 rect
+      color# @ = IF  15  0 J 8 * +  72 I 8 * +  8 8 rectb  THEN
     LOOP
   LOOP
 ;
