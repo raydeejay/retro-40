@@ -231,15 +231,39 @@ void R40SprEx(ficlVm *vm) {
     return;
 }
 
-void R40Map(ficlVm *vm) {
-    for (int j = 0; j < 24; ++j) {
-        for (int i = 0; i < 32; ++i) {
-            int tile = gMRAM[j*R40_WIDTH + i];
-            blitSpriteEx(tile, i * 8, j * 8, 1, 1);
+
+static void blitMap(int x, int y, int w, int h, int sx, int sy) {
+    // force the scale back to 1 for now
+    // should ignore the other variables... let's force-reset them as well
+    // don't touch the colorKey, though
+    scale = 1;
+    flip = 0;
+    rotate = 0;
+
+    for (int j = 0; j < h; ++j) {
+        for (int i = 0; i < w; ++i) {
+            int tile = gMRAM[(j+y)*R40_WIDTH + i+x];
+            blitSpriteEx(tile, i * 8 + sx, j * 8 + sy, 1, 1);
         }
     }
+}
 
-    return;
+void R40Map(ficlVm *vm) {
+    int y = (int) ficlStackPopInteger(vm->dataStack);
+    int x = (int) ficlStackPopInteger(vm->dataStack);
+
+    blitMap(x, y, 32, 24, 0, 0);
+}
+
+void R40MapEx(ficlVm *vm) {
+    int sy = (int) ficlStackPopInteger(vm->dataStack);
+    int sx = (int) ficlStackPopInteger(vm->dataStack);
+    int h = (int) ficlStackPopInteger(vm->dataStack);
+    int w = (int) ficlStackPopInteger(vm->dataStack);
+    int y = (int) ficlStackPopInteger(vm->dataStack);
+    int x = (int) ficlStackPopInteger(vm->dataStack);
+
+    blitMap(x, y, w, h, sx, sy);
 }
 
 // needs indexed PNGs
@@ -320,7 +344,8 @@ struct { const char *name; R40_func fn; const char *doc; } R40_prims[] = {
     { "time",          R40Time,         "Returns the time in milliseconds (TBI from the start of the FC?)" },
     { "spr",           R40Spr,          "( x y n --)  Blits sprite N at X,Y" },
     { "spr*",          R40SprEx,        "( x y w h n -- )  Blits sprite N at X,Y with size W,H" },
-    { "map",           R40Map,          "(map id x y [w] [h]) Blits the map to the screen" },
+    { "map",           R40Map,          "( x y -- )  Blits 32x24 tiles starting from X,Y to the screen at 0,0" },
+    { "map*",          R40MapEx,        "( x y w h sx sy --)  Blits WxH tiles starting from X,Y to the screen at SX,SY" },
     { "p!",            R40Pset,         "(pix x y c) Sets the pixel at x,y to color c" },
     { "p@",            R40Pget,         "(pix x y) Gets the pixel at x,y" },
     { "m!",            R40Mset,         "(mapx x y c) Sets the tile at x,y to sprite c" },
