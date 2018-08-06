@@ -214,10 +214,12 @@ VARIABLE numerator
 ;
 
 \ load some code
-include font.fs
-include console.fs
-include sprite-editor.fs
-include snake.fs
+INCLUDE input.fs
+INCLUDE font.fs
+INCLUDE console.fs
+INCLUDE sprite-editor.fs
+INCLUDE map-editor.fs
+INCLUDE snake.fs
 
 \ run the console program
 S" Retro-40 Initialised" ?puts CR CR
