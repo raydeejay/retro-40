@@ -88,20 +88,7 @@ VARIABLE sprite#
 
 : spritesheet
   ( bg @ ) 3 96 0 32 8 * 16 8 * rect
-  16 0 DO
-    16 0 DO
-      96 I 8 * +  J 8 *   J 16 * I +  spr
-    LOOP
-  LOOP
-;
-
-: sspr  ( scale u x y -- )
-  { scale u x y }
-  8 0 DO
-    8 0 DO
-      I J u SP@  I scale * x +  J scale * y +  scale  scale  rect
-    LOOP
-  LOOP
+  96 0  16 32  0 spr*
 ;
 
 : palette-display
@@ -114,13 +101,18 @@ VARIABLE sprite#
   LOOP
 ;
 
-: zoomed-display   6 0 0 65 65 rectb  8 sprite# @  0  0 sspr ;
-: preview-display  sprite# @ 80 32  spr ;
+: zoomed-display   6 0 0 65 65 rectb  8 scale !  0 0 sprite# @ spr  1 scale ! ;
+: preview-display  80 32 sprite# @ spr ;
+
 : cursor-display
   14  8 cursorx @ *       8 cursory @ *  8 8 rectb
   14  8 sprite# @ 16 MOD * 96 +  8 sprite# @ 16 / *  8 8 rectb
 ;
-: color-display    color# @ 80 48 8 8 rect ;
+
+: color-display
+  color# @ 80 48 8 8 rect
+  color# @ = IF  15  0 J 8 * +  72 I 8 * +  8 8 rectb  THEN
+;
 
 : <draw>
   palette-display
