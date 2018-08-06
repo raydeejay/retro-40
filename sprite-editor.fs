@@ -38,7 +38,7 @@ VARIABLE sprite#
 : -color   ( -- )   color# @ 1-  16 MOD 0 MAX  color# ! ;
 : +sprite  ( -- )  sprite# @ 1+ 256 MOD       sprite# ! ;
 : -sprite  ( -- )  sprite# @ 1- 256 MOD 0 MAX sprite# ! ;
-                    
+
 : update-mouse  ( -- )
   MOUSEX @ MOUSEY @ draw-area? IF
     MOUSEB @ CASE
@@ -94,9 +94,10 @@ VARIABLE sprite#
 : palette-display
   4 0 DO
     4 0 DO
-      I 4 * J +
+      I 4 * J +  DUP
       0 J 8 * +  72 I 8 * +
       8 8 rect
+      color# @ = IF  15  0 J 8 * +  72 I 8 * +  8 8 rectb  THEN
     LOOP
   LOOP
 ;
@@ -111,14 +112,13 @@ VARIABLE sprite#
 
 : color-display
   color# @ 80 48 8 8 rect
-  color# @ = IF  15  0 J 8 * +  72 I 8 * +  8 8 rectb  THEN
 ;
 
 : <draw>
   palette-display
+  color-display
   zoomed-display
   preview-display
-  color-display
   spritesheet
   cursor-display
   help ;
