@@ -22,16 +22,8 @@ s" Retro-40 ROM Booting" TYPE CR
 
 : RND      ( u -- u' )  RANDOM SWAP MOD ;
 
-
-\ ------------------------------------------------------------
-\ SYSTEM SETTINGS (should probably be exported from C instead)
-\ ------------------------------------------------------------
-
-256 CONSTANT W
-192 CONSTANT H
-
-
-INCLUDE input.fs
+: CELLS+  ( addr u -- addr' )  CELLS + ;
+: CELLS-  ( addr u -- addr' )  CELLS - ;
 
 
 
