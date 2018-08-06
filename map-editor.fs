@@ -71,7 +71,7 @@ VARIABLE sprite#
   LOOP
 ;
 
-: map-display      map ;
+: map-display      0 0 map ;
 
 : <draw>
   0 cls

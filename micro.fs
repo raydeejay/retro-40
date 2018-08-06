@@ -134,7 +134,7 @@ VARIABLE startx
 
 : <update>  ( -- )  ?jump  walk  move  ?pushback  accumulate-gravity  fall  ?hit-floor  ?hit-ceiling  ?exit ;
 
-: <draw>  ( -- )  0 cls  map  x F@ F>S y F@ F>S 0 spr  s" v1.0 2016 - @matthughson" 15 0 0 PUTS ;
+: <draw>  ( -- )  0 cls  0 0 map  x F@ F>S y F@ F>S 0 spr  s" v1.0 2016 - @matthughson" 15 0 0 PUTS ;
 
 PREVIOUS DEFINITIONS
 
