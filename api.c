@@ -168,18 +168,46 @@ void R40SPget(ficlVm *vm) {
     return;
 }
 
-static void blitSprite(int n, int x, int y) {
-    for (int j = 0; j < 8; ++j) {
-        for (int i = 0; i < 8; ++i) {
-            int pixel = gSRAM[n*8*8 + j*8 + i];
-            if (pixel
-                && x+i > -1 && x+i < R40_WIDTH
-                && y+j > -1 && y+j < R40_HEIGHT) {
-                gVRAM[(y+j)*R40_WIDTH + x+i] = pixel;
+
+long colorKey = -1;
+long scale = 1;
+long flip = 0;
+long rotate = 0;
+
+static void blitSpriteEx(int n, int x, int y, int w, int h) {
+    // flipping
+    int j0 = 0, jn = 8*h, dj = 1;
+    if (flip & 2) { j0 = 8*h-1; jn = -1 ; dj = -1; }
+    int i0 = 0, in = 8*w, di = 1;
+    if (flip & 1) { i0 = 8*w-1; in = -1 ; di = -1; }
+
+    // DO NOTE that sprites are stored as runs of 64 bytes,
+    // instead of in a spritesheet... this complicates the matter
+    // of blitting a block of sprites
+
+    // 8 height frop top to bottom
+    for (int j = 0, jj = j0; j < 8*h; ++j, jj += dj) {
+        // 8 width from left to right
+        for (int i = 0, ii = i0; i < 8*w; ++i, ii += di) {
+            // grab the pixel from sprite N
+            /* int pixel = gSRAM[n*8*8 + j*R40_HEIGHT + i]; */
+            int pixel = gSRAM[n/16*16*8*8  + j*16*8 + n%16*8 + i];
+
+                // don't draw transparent pixels
+            if (pixel != colorKey) {
+                // apply scaling
+                for (int yy = y+jj*scale; yy < y+jj*scale+scale; ++yy) {
+                    for (int xx = x+ii*scale; xx < x+ii*scale+scale; ++xx) {
+                        // if inside the VRAM
+                        if (xx > -1 && xx < R40_WIDTH && yy > -1 && yy < R40_HEIGHT) {
+                            // plot pixel
+                            gVRAM[yy * R40_WIDTH + xx] = pixel;
+                        }
+                    }
+                }
             }
         }
     }
-
     return;
 }
 
@@ -188,7 +216,18 @@ void R40Spr(ficlVm *vm) {
     int y = (int) ficlStackPopInteger(vm->dataStack);
     int x = (int) ficlStackPopInteger(vm->dataStack);
 
-    blitSprite(n, x, y);
+    blitSpriteEx(n, x, y, 1, 1);
+    return;
+}
+
+void R40SprEx(ficlVm *vm) {
+    int n = (int) ficlStackPopInteger(vm->dataStack);
+    int h = (int) ficlStackPopInteger(vm->dataStack);
+    int w = (int) ficlStackPopInteger(vm->dataStack);
+    int y = (int) ficlStackPopInteger(vm->dataStack);
+    int x = (int) ficlStackPopInteger(vm->dataStack);
+
+    blitSpriteEx(n, x, y, w, h);
     return;
 }
 
@@ -196,7 +235,7 @@ void R40Map(ficlVm *vm) {
     for (int j = 0; j < 24; ++j) {
         for (int i = 0; i < 32; ++i) {
             int tile = gMRAM[j*R40_WIDTH + i];
-            blitSprite(tile, i * 8, j * 8);
+            blitSpriteEx(tile, i * 8, j * 8, 1, 1);
         }
     }
 
@@ -211,7 +250,7 @@ void R40ImportSprite(ficlVm *vm) {
 
     char* id = strndup(name.text, name.length);
     printf("file '%s'\n", name.text);
-    
+
     SDL_Surface *surf = IMG_Load(id);
     if (surf == NULL) {
         printf("Error creating surface to import sprite %s\n", id);
@@ -279,7 +318,8 @@ typedef void (*R40_func)(ficlVm *vm);
 
 struct { const char *name; R40_func fn; const char *doc; } R40_prims[] = {
     { "time",          R40Time,         "Returns the time in milliseconds (TBI from the start of the FC?)" },
-    { "spr",           R40Spr,          "(spr id x y [w] [h]) Blits sprite id at x,y with size w,h" },
+    { "spr",           R40Spr,          "( x y n --)  Blits sprite N at X,Y" },
+    { "spr*",          R40SprEx,        "( x y w h n -- )  Blits sprite N at X,Y with size W,H" },
     { "map",           R40Map,          "(map id x y [w] [h]) Blits the map to the screen" },
     { "p!",            R40Pset,         "(pix x y c) Sets the pixel at x,y to color c" },
     { "p@",            R40Pget,         "(pix x y) Gets the pixel at x,y" },
@@ -342,7 +382,7 @@ void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsig
     ficlDictionarySetPrimitive(dictionary, "FLOOR",  ficlPrimitiveFloor,  FICL_WORD_DEFAULT);
     ficlDictionarySetPrimitive(dictionary, "F>S",  ficlPrimitiveFloor,  FICL_WORD_DEFAULT);
     ficlDictionarySetPrimitive(dictionary, "S>F",  ficlPrimitiveIntegerToFloat,  FICL_WORD_DEFAULT);
-    
+
     // system constants
     ficlDictionarySetConstant(dictionary, "W",  R40_WIDTH);
     ficlDictionarySetConstant(dictionary, "H",  R40_HEIGHT);
@@ -364,6 +404,12 @@ void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsig
     ficlDictionarySetConstantPointer(dictionary, "MOUSEX",    &gMouseX);
     ficlDictionarySetConstantPointer(dictionary, "MOUSEY",    &gMouseY);
     ficlDictionarySetConstantPointer(dictionary, "MOUSEB",    &gMouseButtons);
+
+    // blitting variables
+    ficlDictionarySetConstantPointer(dictionary, "COLORKEY",  &colorKey);
+    ficlDictionarySetConstantPointer(dictionary, "SCALE",     &scale);
+    ficlDictionarySetConstantPointer(dictionary, "FLIP",      &flip);
+    ficlDictionarySetConstantPointer(dictionary, "ROTATE",    &rotate);
 
     // should probably override BYE or provide another means of exiting
 
