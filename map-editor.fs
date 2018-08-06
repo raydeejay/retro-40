@@ -1,5 +1,20 @@
 \ map-editor.fs
 
+\ I/O
+: #map W H * ;
+
+: save-map  ( addr u -- )
+  R/W BIN CREATE-FILE ABORT" Error opening map file"
+  DUP  MRAM  #map  ROT  WRITE-FILE ABORT" Error writing map"
+  CLOSE-FILE ABORT" Error closing map file"
+;
+
+: load-map  ( addr u -- )
+  R/O BIN OPEN-FILE ABORT" Error opening map file"
+  DUP  MRAM  #map  ROT  READ-FILE ABORT" Error reading map" DROP
+  CLOSE-FILE ABORT" Error closing map file"
+;
+
 17 ficl-vocabulary map-editor-voc
 also map-editor-voc definitions
 
@@ -9,7 +24,8 @@ also map-editor-voc definitions
 
 VARIABLE sprite#
 
-: #map W H * ;
+VARIABLE mapx
+VARIABLE mapy
 
 \ I/O
 : save-map  ( addr u -- )
