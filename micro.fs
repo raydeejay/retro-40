@@ -41,32 +41,7 @@
 17 ficl-vocabulary micro-platformer
 also micro-platformer definitions
 
-CREATE mapbytes
-1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 2 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 2 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 2 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 3 C, 2 C, 2 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 2 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 2 C, 3 C, 3 C, 3 C, 2 C, 2 C, 2 C, 2 C, 2 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 3 C, 2 C, 2 C, 2 C, 2 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 1 C, 3 C, 2 C, 3 C, 3 C, 3 C, 3 C, 3 C, 1 C, 1 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 2 C, 3 C, 3 C, 2 C, 1 C, 1 C, 3 C, 1 C, 3 C, 2 C, 3 C, 3 C, 3 C, 1 C, 1 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-1 C, 3 C, 1 C, 3 C, 2 C, 1 C, 1 C, 1 C, 3 C, 1 C, 3 C, 1 C, 3 C, 2 C, 3 C, 1 C, 1 C, 1 C, 1 C, 1 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 2 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C, 5 C,
-
 0 DEFINE-SFX jump.wav
-
-: initmap  ( -- )
-  mapbytes 15 0 DO
-    32 0 DO
-      DUP C@  J W * I + MRAM +  C!  1+
-    LOOP
-  LOOP DROP
-;
 
 : solid?  ( tile# -- f ) DUP 1 = SWAP 2 = OR ;
 
@@ -139,8 +114,8 @@ VARIABLE startx
 
 \ initialization
 : init-player  ( -- )
-   16e  x F!
-   16e  y F!
+   24e  x F!
+   24e  y F!
     0e dx F!
     0e dy F!
      0 grounded? !
@@ -151,8 +126,8 @@ VARIABLE startx
 \ hooks
 : <init>  ( -- )
   s" default.spr" load-sprites
-  MRAM W H * 5 FILL
-  initmap init-player
+  s" default.map" load-map
+  init-player
 ;
 
 : ?exit  ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
