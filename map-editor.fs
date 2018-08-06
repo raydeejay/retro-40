@@ -7,10 +7,7 @@ also map-editor-voc definitions
 0 VALUE image
 0 VALUE hud?
 
-VARIABLE cursorx
-VARIABLE cursory
 VARIABLE sprite#
-2VARIABLE last-coords
 
 : #map W H * ;
 
@@ -26,14 +23,13 @@ VARIABLE sprite#
   CLOSE-FILE ABORT" Error closing map file" ;
 
 \ editor
-: paint-tile  ( x y -- )    sprite# @  -ROT  m! ;
-: clear-tile  ( x y -- )            0  -ROT  m! ;
-: draw-area?   ( x y -- f )   0 64 WITHIN  SWAP   0 64 WITHIN  AND ;
-: sprite-area?  ( x y -- f )  48 56 WITHIN  SWAP  80 88 WITHIN  AND ;
 : +sprite           ( -- )    sprite# @ 1+ 256 MOD  sprite# ! ;
 : -sprite           ( -- )    sprite# @ 1- 256 MOD  sprite# ! ;
 
 : toggle-hud  ( -- )  hud? NOT TO hud? ;
+
+: paint-tile  ( x y -- )    sprite# @  -ROT  m! ;
+: clear-tile  ( x y -- )            0  -ROT  m! ;
 
 : update-mouse  ( -- )
   MOUSEB @ CASE
@@ -46,11 +42,9 @@ VARIABLE sprite#
 : clicked-sprite  ( x y -- u )  72 - 8 / 4 *  SWAP 8 / +  ;
 
 : update-mouse-hud  ( -- )
-  MOUSEX @  MOUSEY @
   MOUSEB @ CASE
-    1 OF  2DUP palette-area? IF  2DUP clicked-sprite sprite# !  THEN  ENDOF
+    1 OF  MOUSEX @  MOUSEY @ palette-area? IF  2DUP clicked-sprite sprite# !  THEN  ENDOF
   ENDCASE
-  last-coords 2!
 ;
 
 : update-keys  ( -- )
@@ -67,23 +61,6 @@ VARIABLE sprite#
   update-keys
 ;
 
-: mapheet
-  ( bg @ ) 3 96 0 32 8 * 16 8 * rect
-  16 0 DO
-    32 0 DO
-      96 I 8 * +  J 8 * I +    J 8 * I +  spr
-    LOOP
-  LOOP ;
-
-: sspr  ( scale u x y -- )
-  { scale u x y }
-  8 0 DO
-    8 0 DO
-      I J u SP@  I scale * x +  J scale * y +  scale  scale  rect
-    LOOP
-  LOOP
-;
-
 : palette-display
   4 0 DO
     4 0 DO
@@ -94,19 +71,13 @@ VARIABLE sprite#
   LOOP
 ;
 
-: zoomed-display   8 sprite# @  0  0 sspr ;
 : map-display      map ;
-: cursor-display   14  8 cursorx @ *  8 cursory @ *  8 8 rect ;
-: sprite-display    sprite# @ 80 48 8 8 rect ;
 
 : <draw>
   0 cls
-\  zoomed-display
   map-display
-\  sprite-display
-  \  cursor-display
   hud? IF
-    0 0 72 32 32 rect
+    0 0 64 40 48 rect
     palette-display
   THEN
 ;
