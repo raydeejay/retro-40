@@ -104,6 +104,7 @@ CREATE cmdline' 64 ALLOT
   8 OVER = IF
     sx @ 0> IF
       DROP undraw-cursor
+      BL ?PUT
       -1 cmdlen + TO cmdlen  0 cmdline cmdlen + C!
       THEN
     EXIT
