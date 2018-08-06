@@ -117,9 +117,9 @@ VARIABLE numerator
   radius  radius NEGATE  ?DO
     radius  radius NEGATE  ?DO
       I I * J J * +  radius radius * radius +  < IF
-        color x0 I + y0 J + p! 
+        color x0 I + y0 J + p!
       THEN
-    LOOP    
+    LOOP
   LOOP ;
 
 : circb  ( color x0 y0 radius -- )
@@ -129,63 +129,63 @@ VARIABLE numerator
       I I * J J * +  radius radius * radius -  >
       I I * J J * +  radius radius * radius +  <
       AND IF
-        color x0 I + y0 J + p! 
+        color x0 I + y0 J + p!
       THEN
-    LOOP    
+    LOOP
   LOOP ;
 
 
-\ ------------------------------------------------------------
-\ RECTS DEMO
-\ ------------------------------------------------------------
-0 VALUE x
-0 VALUE y
-0 VALUE dx 
-0 VALUE dy
-0 VALUE col 
+\ \ ------------------------------------------------------------
+\ \ RECTS DEMO
+\ \ ------------------------------------------------------------
+\ 0 VALUE x
+\ 0 VALUE y
+\ 0 VALUE dx
+\ 0 VALUE dy
+\ 0 VALUE col
 
-: <init>
-  W 2/ TO x
-  H 2/ TO y
-  6 TO dx
-  4 TO dy
-  4 TO col
-;
+\ : <init>
+\   W 2/ TO x
+\   H 2/ TO y
+\   6 TO dx
+\   4 TO dy
+\   4 TO col
+\ ;
 
-: bounce-rect
-  dx x + TO x
-  dy y + TO y
-  x 0<  x W 6 - >  OR IF
-    dx NEGATE TO dx
-    col 1+ 15 mod 1 MAX  TO col
-  THEN
-  y 0<  y H 6 - >  OR IF
-    dy NEGATE TO dy
-    col 1+ 16 mod 1 MAX  TO col
-  THEN
-  col x y 6 6 rect
-;
+\ : bounce-rect
+\   dx x + TO x
+\   dy y + TO y
+\   x 0<  x W 6 - >  OR IF
+\     dx NEGATE TO dx
+\     col 1+ 15 mod 1 MAX  TO col
+\   THEN
+\   y 0<  y H 6 - >  OR IF
+\     dy NEGATE TO dy
+\     col 1+ 16 mod 1 MAX  TO col
+\   THEN
+\   col x y 6 6 rect
+\ ;
 
-: rp!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  P! ;
-: rl!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  RANDOM W MOD     RANDOM H MOD     line ;
-: rr!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  RANDOM W MOD 2/  RANDOM H MOD 2/  rect ;
-: rc!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  RANDOM H MOD 2/  circ ;
+\ : rp!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  P! ;
+\ : rl!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  RANDOM W MOD     RANDOM H MOD     line ;
+\ : rr!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  RANDOM W MOD 2/  RANDOM H MOD 2/  rect ;
+\ : rc!     ( -- )  RANDOM 15 MOD 1+  RANDOM W MOD  RANDOM H MOD  RANDOM H MOD 2/  circ ;
 
-\ : update  ( -- )  10 0 do  rp! rl! rr! rc! bounce-rect loop  ;
+\ \ : update  ( -- )  10 0 do  rp! rl! rr! rc! bounce-rect loop  ;
 
-\ define a sprite
-1 3 3 1 sp!
-2 4 3 1 sp!
-3 3 4 1 sp!
-4 4 4 1 sp!
+\ \ define a sprite
+\ 1 3 3 1 sp!
+\ 2 4 3 1 sp!
+\ 3 3 4 1 sp!
+\ 4 4 4 1 sp!
 
-\ regular keyboard input, with repeat and all
-: input   ( -- )
-  SCANCODE_A pressed? IF  x 1- TO x  THEN
-  SCANCODE_D pressed? IF  x 1+ TO x  THEN
-  SCANCODE_W pressed? IF  y 1- TO y  THEN
-  SCANCODE_S pressed? IF  y 1+ TO y  THEN
-;
+\ \ regular keyboard input, with repeat and all
+\ : input   ( -- )
+\   SCANCODE_A pressed? IF  x 1- TO x  THEN
+\   SCANCODE_D pressed? IF  x 1+ TO x  THEN
+\   SCANCODE_W pressed? IF  y 1- TO y  THEN
+\   SCANCODE_S pressed? IF  y 1+ TO y  THEN
+\ ;
 
 \ : update    ( -- )  input  x y 1 spr ;
 
