@@ -142,7 +142,8 @@ void R40SPset(ficlVm *vm) {
     int x = (int) ficlStackPopInteger(vm->dataStack);
     int c = (int) ficlStackPopInteger(vm->dataStack);
 
-    int pos = n*8*8 + y*8 + x;
+    /* int pos = n * 8 * 8 + y*8 + x; */
+    int pos = n/16*16*8*8  + y*16*8 + n%16*8 + x;
 
     if (x >= 0 && x < 8 && y >= 0 && y < 8) {
         gSRAM[pos] = c;
@@ -156,7 +157,8 @@ void R40SPget(ficlVm *vm) {
     int y = (int) ficlStackPopInteger(vm->dataStack);
     int x = (int) ficlStackPopInteger(vm->dataStack);
 
-    int pos = n*8*8 + y*8 + x;
+    /* int pos = n*8*8 + y*8 + x; */
+    int pos = n/16*16*8*8  + y*16*8 + n%16*8 + x;
 
     if (x >= 0 && x < 8 && y >= 0 && y < 8) {
         ficlStackPushInteger(vm->dataStack, gSRAM[pos]);
