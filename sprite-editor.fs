@@ -20,7 +20,7 @@ VARIABLE sprite#
 
 
 \ sprite commands
-: >sprite        ( u -- addr )  DUP 16 / W *  SWAP  16 MOD 8 * +  SRAM + ;
+: >sprite        ( u -- addr )  DUP 16 / 16 * /sprite *  SWAP  16 MOD 8 * +  SRAM + ;
 : copy-sprite  ( src dst -- )
   >sprite SWAP >sprite SWAP
   8 0 DO
