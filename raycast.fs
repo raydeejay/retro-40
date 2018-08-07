@@ -52,6 +52,8 @@ VARIABLE stepY
 VARIABLE side
 
 : calc-step-and-sideDist
+  rayDirY F@ FDUP F* rayDirX F@ FDUP F* F/ 1e F+ FSQRT   deltaDistX F!
+  rayDirX F@ FDUP F* rayDirY F@ FDUP F* F/ 1e F+ FSQRT   deltaDistY F!
   rayDirX F@ F0< IF
     -1 stepX !
     posX F@          mapX @ S>F    F- deltaDistX F@ F* sideDistX F!
