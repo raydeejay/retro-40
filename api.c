@@ -389,13 +389,26 @@ char *load_file(const char *filename) {
 void ficlPrimitiveFloor(ficlVm *vm) {
     float f = ficlStackPopFloat(vm->floatStack);
     ficlStackPushInteger(vm->dataStack, floor(f));
-    return;
 }
 
 void ficlPrimitiveIntegerToFloat(ficlVm *vm) {
     float f = ficlStackPopInteger(vm->dataStack);
     ficlStackPushFloat(vm->floatStack, f);
-    return;
+}
+
+void ficlPrimitiveFabs(ficlVm *vm) {
+    float f = ficlStackPopFloat(vm->floatStack);
+    ficlStackPushFloat(vm->floatStack, fabs(f));
+}
+
+void ficlPrimitiveFsin(ficlVm *vm) {
+    float f = ficlStackPopFloat(vm->floatStack);
+    ficlStackPushFloat(vm->floatStack, sinf(f));
+}
+
+void ficlPrimitiveFcos(ficlVm *vm) {
+    float f = ficlStackPopFloat(vm->floatStack);
+    ficlStackPushFloat(vm->floatStack, cosf(f));
 }
 
 
@@ -406,6 +419,9 @@ void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsig
     ficlDictionarySetPrimitive(dictionary, "FLOOR",  ficlPrimitiveFloor,  FICL_WORD_DEFAULT);
     ficlDictionarySetPrimitive(dictionary, "F>S",  ficlPrimitiveFloor,  FICL_WORD_DEFAULT);
     ficlDictionarySetPrimitive(dictionary, "S>F",  ficlPrimitiveIntegerToFloat,  FICL_WORD_DEFAULT);
+    ficlDictionarySetPrimitive(dictionary, "FABS", ficlPrimitiveFabs,  FICL_WORD_DEFAULT);
+    ficlDictionarySetPrimitive(dictionary, "FSIN", ficlPrimitiveFsin,  FICL_WORD_DEFAULT);
+    ficlDictionarySetPrimitive(dictionary, "FCOS", ficlPrimitiveFcos,  FICL_WORD_DEFAULT);
 
     // system constants
     ficlDictionarySetConstant(dictionary, "W",  R40_WIDTH);
