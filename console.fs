@@ -52,9 +52,28 @@ CREATE cmdline' 64 ALLOT
 
 : ?puts  ( addr u -- )  0 ?DO DUP  C@ ?put  1+ LOOP DROP ;
 
+CREATE logo
+0 C, 1 C, 1 C, 1 C, 1 C, 0 C, 0 C, 1 C, 1 C, 1 C, 1 C, 1 C, 0 C, 1 C, 1 C, 1 C, 1 C, 1 C, 0 C, 1 C, 1 C, 1 C, 1 C, 0 C, 0 C, 0 C, 1 C, 1 C, 1 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 1 C, 1 C, 0 C,
+0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 1 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 1 C, 1 C, 0 C, 0 C, 1 C, 0 C, 0 C, 1 C, 1 C,
+0 C, 1 C, 1 C, 1 C, 1 C, 0 C, 0 C, 1 C, 1 C, 1 C, 1 C, 0 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 1 C, 1 C, 1 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 1 C, 1 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 1 C, 0 C, 0 C, 1 C, 0 C, 1 C, 0 C, 1 C,
+0 C, 1 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 1 C, 1 C, 1 C, 1 C, 1 C, 0 C, 1 C, 1 C, 0 C, 0 C, 1 C,
+0 C, 1 C, 0 C, 0 C, 1 C, 0 C, 0 C, 1 C, 1 C, 1 C, 1 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 1 C, 1 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 0 C, 1 C, 0 C, 0 C, 0 C, 1 C, 1 C, 1 C, 0 C,
+
+: print-logo  ( -- )
+  CR
+  logo
+  5 0 DO
+    48 0 DO
+      DUP  C@ IF 4 ELSE 32 THEN EMIT  1+
+    LOOP CR
+  LOOP CR CR DROP
+;
+
 : <init>
   cmdline 64 ERASE
   15 fg !  0 bg !  bg @ cls
+  0 0 at-xy
+  print-logo
 ;
 
 : exec-cmdline
