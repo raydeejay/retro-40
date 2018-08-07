@@ -411,6 +411,11 @@ void ficlPrimitiveFcos(ficlVm *vm) {
     ficlStackPushFloat(vm->floatStack, cosf(f));
 }
 
+void ficlPrimitiveFsqrt(ficlVm *vm) {
+    float f = ficlStackPopFloat(vm->floatStack);
+    ficlStackPushFloat(vm->floatStack, sqrtf(f));
+}
+
 
 void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsigned char *lastkeys) {
     ficlDictionary *dictionary = ficlSystemGetDictionary(system);
@@ -422,6 +427,7 @@ void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsig
     ficlDictionarySetPrimitive(dictionary, "FABS", ficlPrimitiveFabs,  FICL_WORD_DEFAULT);
     ficlDictionarySetPrimitive(dictionary, "FSIN", ficlPrimitiveFsin,  FICL_WORD_DEFAULT);
     ficlDictionarySetPrimitive(dictionary, "FCOS", ficlPrimitiveFcos,  FICL_WORD_DEFAULT);
+    ficlDictionarySetPrimitive(dictionary, "FSQRT", ficlPrimitiveFsqrt,  FICL_WORD_DEFAULT);
 
     // system constants
     ficlDictionarySetConstant(dictionary, "W",  R40_WIDTH);
