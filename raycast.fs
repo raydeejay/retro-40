@@ -1,4 +1,4 @@
-\ uses sprites 8-15
+\ raycasting example
 
 17 ficl-vocabulary raycast-voc
 also raycast-voc definitions
@@ -15,6 +15,7 @@ VARIABLE planeY
 
 \ int
 VARIABLE column
+0 VALUE tick
 
 \ floats
 VARIABLE rayDirX
@@ -29,6 +30,7 @@ VARIABLE mapY
   column @ 2* S>F   W S>F  F/  1e f-  TO cameraX
   cameraX planeX F@ F*   dirX F@ F+  rayDirX F!
   cameraX planeY F@ F*   dirY F@ F+  rayDirY F!
+  \ these are inverted
   posX F@ F>S mapX !
   posY F@ F>S mapY !
 ;
@@ -49,21 +51,20 @@ VARIABLE stepY
 \ ints
 VARIABLE side
 
-
 : calc-step-and-sideDist
   rayDirX F@ F0< IF
     -1 stepX !
-    posX F@ mapX @ S>F F- deltaDistX F@ F* sideDistX F!
+    posX F@          mapX @ S>F    F- deltaDistX F@ F* sideDistX F!
   ELSE
     1 stepX !
-    mapX @ S>F 1e F+ posX F@ F- deltaDistX F@ F* sideDistX F!
+    mapX @ 1+ S>F    posX F@       F- deltaDistX F@ F* sideDistX F!
   THEN
   rayDirY F@ F0< IF
     -1 stepY !
-    posY F@ mapY @ S>F F- deltaDistY F@ F* sideDistY F!
+    posY F@          mapY @ S>F    F- deltaDistY F@ F* sideDistY F!
   ELSE
     1 stepY !
-    mapY @ S>F 1e F+ posY F@ F- deltaDistY F@ F* sideDistY F!
+    mapY @ S>F 1e F+ posY F@       F- deltaDistY F@ F* sideDistY F!
   THEN
 ;
 
@@ -79,7 +80,7 @@ VARIABLE side
       1 side !
     THEN
     \ check if ray hits a wall
-    mapX @ mapY @ M@
+    mapY @ mapX @ M@
   UNTIL
 ;
 
@@ -87,9 +88,9 @@ VARIABLE side
 \ (Euclidean distance will give fisheye effect!)
 : calc-distance-projected
   side @ IF
-    1 stepY @ - 2/  mapY @ +  S>F posY F@ F-  rayDirY F@ F/  perpWallDist F!
+    1 stepY @ - 2/  mapY @ +  S>F posY F@ F-  rayDirY F@ F/ perpWallDist F!
   ELSE
-    1 stepX @ - 2/  mapX @ +  S>F posX F@ F-  rayDirX F@ F/  perpWallDist F!
+    1 stepX @ - 2/  mapX @ +  S>F posX F@ F-  rayDirX F@ F/ perpWallDist F!
   THEN
 ;
 
@@ -104,7 +105,6 @@ VARIABLE drawEnd
   lineHeight @ 2/         H 2/  + H 1- MIN drawEnd !
 ;
 
-
 \ ints
 VARIABLE texX
 
@@ -112,18 +112,19 @@ VARIABLE texX
 VARIABLE wallX
 
 : calc-wallX
-  side @ IF
-    perpWallDist F@ rayDirX F@ F* posX F@ F+  wallX F!
+  perpWallDist F@  side @ IF
+    rayDirX F@ F*  posX F@ F+
   ELSE
-    perpWallDist F@ rayDirY F@ F* posY F@ F+  wallX F!
-  THEN
+    rayDirY F@ F*  posY F@ F+
+  THEN   wallX F!
   wallX F@ F>S NEGATE S>F  wallX F+!
 ;
 
 : calc-texX
   wallX F@ 8e F* F>S texX !
-  side @  0= rayDirX F@ F0> AND IF  8 texX @ - 1- texX !  THEN
-  side @ 1 = rayDirY F@ F0< AND IF  8 texX @ - 1- texX !  THEN
+  \ note: not sure of what these two lines are supposed to do... adjust the colour?
+  \ side @  0= rayDirX F@ F0> AND IF  8 texX @ - 1- texX !  THEN
+  \ side @ 1 = rayDirY F@ F0< AND IF  8 texX @ - 1- texX !  THEN
 ;
 
 : draw-line
@@ -131,7 +132,9 @@ VARIABLE wallX
   drawEnd @ drawStart @ ?DO
     I 256 * H 128 * - lineHeight @ 128 * + TO D
     8 d * lineHeight @ /  256 /  TO texY
-    texX @  texY  mapX @ mapY @ M@  SP@  TO color
+    texX @  texY  mapY @ mapX @ M@
+    DUP 34 = IF  tick 25 / +  THEN
+    ( x y sprite ) SP@  TO color
     color column @ I P!
   LOOP
 ;
@@ -153,60 +156,57 @@ VARIABLE wallX
   LOOP
 ;
 
-
 : <init>
   s" default.spr" load-sprites
   s" default.map" load-map
-     4e posX F!
-     4e posY F!
-    -1e dirX F!
-     0e dirY F!
-     0e planeX F!
+  4e posX F!
+  4e posY F!
+  -1e dirX F!
+  0e dirY F!
+  0e planeX F!
   0.66e planeY F!
+  0 TO tick
 ;
 
 : ?exit  ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
-
-VARIABLE oldDirX
-VARIABLE oldPlaneX
 
 0.05e FCONSTANT moveSpeed
 0.03e FCONSTANT rotSpeed
 
 : move-forward
-  posX F@ dirX F@ moveSpeed F* F+ F>S  posY F@ F>S  M@ 0= IF
+posY F@ F>S    posX F@ dirX F@ moveSpeed F* F+ F>S  M@ 0= IF
     dirX F@ moveSpeed F*  posX F+!
   THEN
-  posX F@ F>S  posY F@ dirY F@ moveSpeed F* F+ F>S  M@ 0= IF
+posY F@ dirY F@ moveSpeed F* F+ F>S  posX F@ F>S    M@ 0= IF
     dirY F@ moveSpeed F*  posY F+!
   THEN
 ;
 
 : move-backward
-  posX F@ dirX F@ moveSpeed F* F- F>S  posY F@ F>S  M@ 0= IF
+ posY F@ F>S  posX F@ dirX F@ moveSpeed F* F- F>S   M@ 0= IF
     dirX F@ moveSpeed F*  FNEGATE posX F+!
   THEN
-  posX F@ F>S  posY F@ dirY F@ moveSpeed F* F- F>S  M@ 0= IF
+  posY F@ dirY F@ moveSpeed F* F- F>S    posX F@ F>S  M@ 0= IF
     dirY F@ moveSpeed F*  FNEGATE posY F+!
   THEN
 ;
 
 : turn-left
-  dirX F@ oldDirX F!
-  planeX F@ oldPlaneX F!
-       dirX F@ rotSpeed FCOS F*    dirY F@ rotSpeed FSIN F*  F-  dirX F!
-    oldDirX F@ rotSpeed FSIN F*    dirY F@ rotSpeed FCOS F*  F+  dirY F!
-     planeX F@ rotSpeed FCOS F*  planeY F@ rotSpeed FSIN F*  F-  planeX F!
-  oldPlaneX F@ rotSpeed FSIN F*  planeY F@ rotSpeed FCOS F*  F+  planeY F!
+  { | f:rcos f:rsin }
+  rotSpeed FDUP  FSIN TO rsin  FCOS to rcos
+  dirX F@ FDUP     rcos F*    dirY F@ rsin F*  F-  dirX F!
+                   rsin F*    dirY F@ rcos F*  F+  dirY F!
+  planeX F@ FDUP   rcos F*  planeY F@ rsin F*  F-  planeX F!
+                   rsin F*  planeY F@ rcos F*  F+  planeY F!
 ;
 
 : turn-right
-  dirX F@ oldDirX F!
-  planeX F@ oldPlaneX F!
-       dirX F@ rotSpeed FNEGATE FCOS F*    dirY F@ rotSpeed FNEGATE FSIN F*  F-  dirX F!
-    oldDirX F@ rotSpeed FNEGATE FSIN F*    dirY F@ rotSpeed FNEGATE FCOS F*  F+  dirY F!
-     planeX F@ rotSpeed FNEGATE FCOS F*  planeY F@ rotSpeed FNEGATE FSIN F*  F-  planeX F!
-  oldPlaneX F@ rotSpeed FNEGATE FSIN F*  planeY F@ rotSpeed FNEGATE FCOS F*  F+  planeY F!
+  { | f:rcos f:rsin }
+  rotSpeed FNEGATE FDUP  FSIN TO rsin  FCOS to rcos
+  dirX F@ FDUP     rcos F*    dirY F@ rsin F*  F-  dirX F!
+                   rsin F*    dirY F@ rcos F*  F+  dirY F!
+  planeX F@ FDUP   rcos F*  planeY F@ rsin F*  F-  planeX F!
+                   rsin F*  planeY F@ rcos F*  F+  planeY F!
 ;
 
 : ?move  ( -- )
@@ -219,7 +219,9 @@ VARIABLE oldPlaneX
   SCANCODE_D pressed? IF  turn-right  THEN
 ;
 
-: <update>  ( -- )  ?move  ?turn  ?exit ;
+: animate   ( -- )  tick 1+ 100 MOD TO tick ;
+
+: <update>  ( -- )  animate  ?move  ?turn  ?exit ;
 : <draw>    ( -- )  0 cls  draw3d ;
 
 \ install the software
