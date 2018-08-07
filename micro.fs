@@ -125,8 +125,8 @@ VARIABLE startx
 
 \ hooks
 : <init>  ( -- )
-  s" default.spr" load-sprites
-  s" default.map" load-map
+  s" micro.spr" load-sprites
+  s" micro.map" load-map
   init-player
 ;
 
