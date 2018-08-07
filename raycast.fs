@@ -105,15 +105,40 @@ VARIABLE drawEnd
   lineHeight @ 2/         H 2/  + H 1- MIN drawEnd !
 ;
 
-\ ints
-VARIABLE lineColor
 
-: calc-color
-  mapX @ mapY @ M@  lineColor !
-\  side @ IF lineColor @ 2/ lineColor ! THEN
+\ ints
+VARIABLE texX
+
+\ float
+VARIABLE wallX
+
+: calc-wallX
+  side @ IF
+    perpWallDist F@ rayDirX F@ F* posX F@ F+  wallX F!
+  ELSE
+    perpWallDist F@ rayDirY F@ F* posY F@ F+  wallX F!
+  THEN
+  wallX F@ F>S NEGATE S>F  wallX F+!
 ;
 
-: draw-line  lineColor @  column @  drawStart @  column @  drawEnd @  line ;
+: calc-texX
+  wallX F@ 8e F* F>S texX !
+  side @  0= rayDirX F@ F0> AND IF  8 texX @ - 1- texX !  THEN
+  side @ 1 = rayDirY F@ F0< AND IF  8 texX @ - 1- texX !  THEN
+;
+
+: draw-line
+  { | d texY color }
+  drawEnd @ drawStart @ ?DO
+    I 256 * H 128 * - lineHeight @ 128 * + TO D
+    8 d * lineHeight @ /  256 /  TO texY
+    texX @  texY  mapX @ mapY @ M@  SP@  TO color
+    color column @ I P!
+  LOOP
+;
+
+
+\ : draw-line  lineColor @  column @  drawStart @  column @  drawEnd @  line ;
 
 : draw3d
   W 0 DO
@@ -127,7 +152,8 @@ VARIABLE lineColor
     perform-DDA
     calc-distance-projected
     calc-lowest-highest
-    calc-color
+    calc-wallX
+    calc-texX
     draw-line
   LOOP
 ;
