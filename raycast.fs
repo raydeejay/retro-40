@@ -17,7 +17,6 @@ VARIABLE planeY
 VARIABLE column
 
 \ floats
-VARIABLE cameraX
 VARIABLE rayDirX
 VARIABLE rayDirY
 
@@ -26,9 +25,10 @@ VARIABLE mapX
 VARIABLE mapY
 
 : calc-position-and-direction
-  column @ 2* S>F   W S>F  F/  1e f-  cameraX F!
-  cameraX F@ planeX F@ F*   dirX F@ F+  rayDirX F!
-  cameraX F@ planeY F@ F*   dirY F@ F+  rayDirY F!
+  { | f:cameraX }
+  column @ 2* S>F   W S>F  F/  1e f-  TO cameraX
+  cameraX planeX F@ F*   dirX F@ F+  rayDirX F!
+  cameraX planeY F@ F*   dirY F@ F+  rayDirY F!
   posX F@ F>S mapX !
   posY F@ F>S mapY !
 ;
