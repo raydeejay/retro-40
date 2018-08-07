@@ -98,11 +98,12 @@ VARIABLE startx
 : ?exit  ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
 
 : calculate-offsets  ( -- )
-  \ determine offset
+  \ determine horizontal offset
   x F@ F>S W 2/ -
   DUP  0< IF DROP 0 THEN
   DUP  W 8 * W - > IF DROP W 8 * W - THEN
   TO offx
+  \ determine vertical offset ( you may want to place the line other than in the middle )
   y F@ F>S H 2/ -
   DUP  0< IF DROP 0 THEN
   DUP  H 8 * H - > IF DROP H 8 * H - THEN
@@ -118,7 +119,8 @@ VARIABLE startx
   fall
   ?hit-floor
   ?hit-ceiling
-  ?exit ;
+  ?exit
+;
 
 : <draw>  ( -- )
   0 cls
@@ -130,7 +132,8 @@ VARIABLE startx
   \ apply offset
   x F@ F>S offx -  y F@ F>S offy -  tick 8 / 8 + spr
   0 flip !    -1 colorkey !
-  s" v1.0 2016 - @matthughson" 15 0 0 PUTS ;
+  s" v1.0 2016 - @matthughson" 15 0 0 PUTS
+;
 
 \ install the software
 PREVIOUS DEFINITIONS
