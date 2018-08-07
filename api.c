@@ -455,4 +455,7 @@ void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsig
 
     // configure to have output to the SDL terminal
     system->callback.textOut = R40TextOut;
+
+    // switch to the outer interpreter
+    ficlVmEvaluate(vm, "retro-40");
 }

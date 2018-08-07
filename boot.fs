@@ -223,4 +223,4 @@ INCLUDE snake.fs
 
 \ run the console program
 S" Retro-40 Initialised" ?puts CR CR
-retro-40
+\ retro-40
