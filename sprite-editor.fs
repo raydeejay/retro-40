@@ -36,11 +36,13 @@ VARIABLE sprite#
 : paint-pixel  ( x y -- )  color# @  -ROT  sprite# @ sp! ;
 : clear-pixel  ( x y -- )         0  -ROT  sprite# @ sp! ;
 
-: draw-area?     ( x y -- f )   0  64 WITHIN  SWAP   0 64 WITHIN  AND ;
-: color-area?    ( x y -- f )  48  56 WITHIN  SWAP  80 88 WITHIN  AND ;
-: palette-area?  ( x y -- f )  72 104 WITHIN  SWAP   0 32 WITHIN  AND ;
+: draw-area?     ( x y -- f )   8  72 WITHIN  SWAP   8  72 WITHIN  AND ;
+: palette-area?  ( x y -- f )  72 104 WITHIN  SWAP   0  32 WITHIN  AND ;
+: sheet-area?    ( x y -- f )   8 136 WITHIN  SWAP  88 216 WITHIN  AND ;
 
-: clicked-color  ( x y -- u )  72 - 8 / 4 *  SWAP 8 / +  ;
+: clicked-pixel   ( x y -- u )  8 - 8 /  SWAP  8 - 8 /  SWAP  ;
+: clicked-color   ( x y -- u )  72 - 8 / 4 *  SWAP 8 / +  ;
+: clicked-sprite  ( x y -- u )  8 - 8 / 16 *  SWAP 88 - 8 / +  ;
 
 : +color   ( -- )   color# @ 1+  16 MOD        color# ! ;
 : -color   ( -- )   color# @ 1-  16 MOD 0 MAX  color# ! ;
@@ -50,19 +52,18 @@ VARIABLE sprite#
 : update-mouse  ( -- )
   MOUSEX @ MOUSEY @ draw-area? IF
     MOUSEB @ CASE
-      1 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  paint-pixel  ENDOF
-      4 OF  MOUSEX @ 8 /  MOUSEY @ 8 /  clear-pixel  ENDOF
-    ENDCASE
-  THEN
-  MOUSEX @ MOUSEY @ color-area? IF
-    MOUSEB @ CASE
-      1 OF  +color  ENDOF
-      4 OF  -color  ENDOF
+      1 OF  MOUSEX @  MOUSEY @  clicked-pixel paint-pixel  ENDOF
+      4 OF  MOUSEX @  MOUSEY @  clicked-pixel clear-pixel  ENDOF
     ENDCASE
   THEN
   MOUSEX @ MOUSEY @ palette-area? IF
     MOUSEB @ CASE
       1 OF  MOUSEX @ MOUSEY @ clicked-color color# ! ENDOF
+    ENDCASE
+  THEN
+  MOUSEX @ MOUSEY @ sheet-area? IF
+    MOUSEB @ CASE
+      1 OF  MOUSEX @ MOUSEY @ clicked-sprite sprite# ! ENDOF
     ENDCASE
   THEN
 ;
@@ -85,18 +86,11 @@ VARIABLE sprite#
 
 : <update>  ( -- )  update-mouse update-keys ;
 
-: help  ( -- )
-  S" WASD  - move"         15 0 128 puts
-  S"  SPC  - paint"        15 0 136 puts
-  S"  C V  - cycle color"  15 0 144 puts
-  S"  N M  - cycle sprite" 15 0 152 puts
-  S" F1 F2 - save/load"    15 0 160 puts
-  S"    Q  - quit"         15 0 168 puts
-;
-
-: spritesheet
-  ( bg @ ) 3 96 0 32 8 * 16 8 * rect
-  96 0  16 32  0 spr*
+: zoomed-display
+  6 7 7 66 66 rectb
+  8 scale !
+  8 8 sprite# @ spr
+  1 scale !
 ;
 
 : palette-display
@@ -110,26 +104,35 @@ VARIABLE sprite#
   LOOP
 ;
 
-: zoomed-display   6 0 0 65 65 rectb  8 scale !  0 0 sprite# @ spr  1 scale ! ;
-: preview-display  80 32 sprite# @ spr ;
-
-: cursor-display
-  14  8 cursorx @ *       8 cursory @ *  8 8 rectb
-  14  8 sprite# @ 16 MOD * 96 +  8 sprite# @ 16 / *  8 8 rectb
+: spritesheet
+  3  87 7  16 8 * 2 +  16 8 * 2 +  rectb
+  88 8  16 16  0 spr*
 ;
 
-: color-display
-  color# @ 80 48 8 8 rect
-;
+\ : help  ( -- )
+\   S" WASD  - move"         15 0 128 puts
+\   S"  SPC  - paint"        15 0 136 puts
+\   S"  C V  - cycle color"  15 0 144 puts
+\   S"  N M  - cycle sprite" 15 0 152 puts
+\   S" F1 F2 - save/load"    15 0 160 puts
+\   S"    Q  - quit"         15 0 168 puts
+\ ;
+
+\ : color-display    ( -- )  color# @ 80 48 8 8 rect ;
+\ : preview-display  ( -- )  80 32 sprite# @ spr ;
+: zoomed-cursor    ( -- )  14  8 cursorx @ * 8 +          8 cursory @ * 8 +       8 8 rectb ;
+: sprite-cursor    ( -- )  14  8 sprite# @ 16 MOD * 88 +  8 sprite# @ 16 / * 8 +  8 8 rectb ;
+: cursor-display   ( -- )  zoomed-cursor sprite-cursor ;
 
 : <draw>
-  palette-display
-  color-display
   zoomed-display
-  preview-display
+  palette-display
   spritesheet
+\   color-display
+\  preview-display
   cursor-display
-  help ;
+\  help
+;
 
 : <init>  0 cls  1 color# ! ;
 
