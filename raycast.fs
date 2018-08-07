@@ -47,7 +47,6 @@ VARIABLE stepX
 VARIABLE stepY
 
 \ ints
-VARIABLE hit
 VARIABLE side
 
 
@@ -146,7 +145,6 @@ VARIABLE wallX
     calc-position-and-direction
     1e rayDirX F@ F/ FABS  deltaDistX F!
     1e rayDirY F@ F/ FABS  deltaDistY F!
-    FALSE hit !
     0 side !
     calc-step-and-sideDist
     perform-DDA
