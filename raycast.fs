@@ -136,9 +136,6 @@ VARIABLE wallX
   LOOP
 ;
 
-
-\ : draw-line  lineColor @  column @  drawStart @  column @  drawEnd @  line ;
-
 : draw3d
   W 0 DO
     I column !
