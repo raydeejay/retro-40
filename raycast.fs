@@ -30,7 +30,9 @@ VARIABLE mapY
   column @ 2* S>F   W S>F  F/  1e f-  TO cameraX
   cameraX planeX F@ F*   dirX F@ F+  rayDirX F!
   cameraX planeY F@ F*   dirY F@ F+  rayDirY F!
-  \ these are inverted
+  \ the axis are transposed in every M@ call, because in the original
+  \ code the map data was transposed...  should probably fix the
+  \ formulas and names
   posX F@ F>S mapX !
   posY F@ F>S mapY !
 ;
@@ -129,19 +131,46 @@ VARIABLE wallX
   \ side @ 1 = rayDirY F@ F0< AND IF  8 texX @ - 1- texX !  THEN
 ;
 
+\ store  texX lineHeight drawStart drawEnd texNum
+CREATE hbuf W 6 CELLS * ALLOT
+hbuf VARIABLE >hbuf
+
 : draw-line
-  { | d texY color }
+  { | d texY color texnum }
+  mapY @ mapX @ M@ TO texnum
   drawEnd @ drawStart @ ?DO
     I 256 * H 128 * - lineHeight @ 128 * + TO D
     8 d * lineHeight @ /  256 /  TO texY
-    texX @  texY  mapY @ mapX @ M@
+    texX @  texY  texnum
     DUP 34 = IF  tick 25 / +  THEN
     ( x y sprite ) SP@  TO color
     color column @ I P!
   LOOP
 ;
 
-: draw3d
+: draw-from-hbuf
+  6 0 DO  >hbuf @ I CELLS +  @  LOOP
+  { column texX lineHeight drawStart drawEnd texNum | texY color }
+
+  drawEnd drawStart ?DO
+    I 256 * H 128 * - lineHeight 128 * +
+    8 * lineHeight /  256 /  TO texY
+    texX  texY  texNum
+    DUP 34 = IF  tick 25 / +  THEN
+    ( x y sprite ) SP@  TO color
+    color column I P!
+  LOOP
+  6 CELLS >hbuf +!
+;
+
+: add-to-hbuf
+  column @  texX @  lineHeight @  drawStart @  drawEnd @  mapY @ mapX @ M@
+  0 5 DO  >hbuf @ I CELLS +  ! -1 +LOOP
+  6 CELLS >hbuf +!
+;
+
+: calc-3d
+  hbuf >hbuf !
   W 0 DO
     I column !
     calc-position-and-direction
@@ -154,7 +183,17 @@ VARIABLE wallX
     calc-lowest-highest
     calc-wallX
     calc-texX
-    draw-line
+    \ draw-line
+    \ add data to a buffer, to be rendered later
+    add-to-hbuf
+  LOOP ;
+
+: draw-3d
+  hbuf >hbuf !
+  W 0 DO
+    I column !
+    draw-from-hbuf
+    \ render entities from near to far
   LOOP
 ;
 
@@ -223,8 +262,12 @@ posY F@ dirY F@ moveSpeed F* F+ F>S  posX F@ F>S    M@ 0= IF
 
 : animate   ( -- )  tick 1+ 100 MOD TO tick ;
 
-: <update>  ( -- )  animate  ?move  ?turn  ?exit ;
-: <draw>    ( -- )  0 cls  draw3d ;
+: <update>  ( -- )  ?move  ?turn   animate calc-3d  ?exit ;
+
+: ceiling   ( -- )  12  0 0     W H 2/  rect ;
+: floor     ( -- )   2  0 H 2/  W H 2/  rect ;
+
+: <draw>    ( -- )  0 cls  ceiling  floor  draw-3d ;
 
 \ install the software
 PREVIOUS DEFINITIONS
