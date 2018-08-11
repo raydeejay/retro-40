@@ -114,8 +114,8 @@ VARIABLE numerator
 \ ------------------------------------------------------------
 : circ  ( color x0 y0 radius -- )
   { color x0 y0 radius | x y -- }
-  radius  radius NEGATE  ?DO
-    radius  radius NEGATE  ?DO
+  radius 1+ radius NEGATE  ?DO
+    radius 1+ radius NEGATE  ?DO
       I I * J J * +  radius radius * radius +  < IF
         color x0 I + y0 J + p!
       THEN
@@ -124,8 +124,8 @@ VARIABLE numerator
 
 : circb  ( color x0 y0 radius -- )
   { color x0 y0 radius -- }
-  radius  radius NEGATE  ?DO
-    radius  radius NEGATE  ?DO
+  radius 1+ radius NEGATE  ?DO
+    radius 1+ radius NEGATE  ?DO
       I I * J J * +  radius radius * radius -  >
       I I * J J * +  radius radius * radius +  <
       AND IF
