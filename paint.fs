@@ -31,12 +31,12 @@ VARIABLE color#
 0 VALUE stack-start
 0 VALUE stack-end
 
-: alloc-stack   ( -- )  16384 CELLS ALLOCATE ABORT" Error allocating floodfill stack" TO stack ;
+: alloc-stack   ( -- )  W H * 2* ALLOCATE ABORT" Error allocating floodfill stack" TO stack ;
 : empty-stack   ( -- )  stack TO stack-start  stack TO stack-end ;
 : free-stack    ( -- )  stack FREE ABORT" Error freeing floodfill stack" ;
 
-: append   ( x y -- )  stack-end       !  stack-end CELL+     !  stack-end 2 CELLS+ TO stack-end ;
-: fetch    ( -- x y )  stack-end CELL- @  stack-end 2 CELLS- @  stack-end 2 CELLS- TO stack-end ;
+: append   ( x y -- )  stack-end    C!  stack-end 1+ C!  stack-end 2+ TO stack-end ;
+: fetch    ( -- x y )  stack-end 1- C@  stack-end 2- C@  stack-end 2- TO stack-end ;
 
 \ this can probably be factored and better optimised :-)
 : flood-fill  ( x y c c'-- )
