@@ -216,16 +216,16 @@ hbuf VARIABLE >hbuf
 0.03e FCONSTANT rotSpeed
 
 : move-forward
-posY F@ F>S    posX F@ dirX F@ moveSpeed F* F+ F>S  M@ 0= IF
+  posY F@ F>S    posX F@ dirX F@ moveSpeed F* F+ F>S  M@ 0= IF
     dirX F@ moveSpeed F*  posX F+!
   THEN
-posY F@ dirY F@ moveSpeed F* F+ F>S  posX F@ F>S    M@ 0= IF
+  posY F@ dirY F@ moveSpeed F* F+ F>S  posX F@ F>S    M@ 0= IF
     dirY F@ moveSpeed F*  posY F+!
   THEN
 ;
 
 : move-backward
- posY F@ F>S  posX F@ dirX F@ moveSpeed F* F- F>S   M@ 0= IF
+  posY F@ F>S  posX F@ dirX F@ moveSpeed F* F- F>S   M@ 0= IF
     dirX F@ moveSpeed F*  FNEGATE posX F+!
   THEN
   posY F@ dirY F@ moveSpeed F* F- F>S    posX F@ F>S  M@ 0= IF
