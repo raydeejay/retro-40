@@ -127,8 +127,9 @@ VARIABLE wallX
 : calc-texX
   wallX F@ 8e F* F>S texX !
   \ note: not sure of what these two lines are supposed to do... adjust the colour?
-  \ side @  0= rayDirX F@ F0> AND IF  8 texX @ - 1- texX !  THEN
-  \ side @ 1 = rayDirY F@ F0< AND IF  8 texX @ - 1- texX !  THEN
+  \ update: they prevent mirroring :-)
+  side @  0= rayDirX F@ F0> AND IF  8 texX @ - 1- texX !  THEN
+  side @ 1 = rayDirY F@ F0< AND IF  8 texX @ - 1- texX !  THEN
 ;
 
 \ store  texX lineHeight drawStart drawEnd texNum
