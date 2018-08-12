@@ -48,8 +48,8 @@ VARIABLE mapy
   ENDCASE
 ;
 
-: palette-area?  ( x y -- f )  72 104 WITHIN  SWAP   0 32 WITHIN  AND ;
-: clicked-sprite  ( x y -- u )  72 - 8 / 4 *  SWAP 8 / +  ;
+: palette-area?  ( x y -- f )  72 72 12 8 * + WITHIN  SWAP   0 16 8 * WITHIN  AND ;
+: clicked-sprite  ( x y -- u )  72 - 8 / 16 *  SWAP 8 / +  ;
 
 : update-mouse-hud  ( -- )
   MOUSEB @ CASE
@@ -76,11 +76,11 @@ VARIABLE mapy
 ;
 
 : palette-display
-  4 0 DO
-    4 0 DO
+  16 0 DO
+    16 0 DO
       0 I 8 * +  72 J 8 * +
-      J 4 * I + spr
-      J 4 * I +  sprite# @ = IF  15  0 I 8 * +  72 J 8 * +  8 8 rectb THEN
+      J 16 * I +  spr
+      J 16 * I +  sprite# @ = IF  15  0 I 8 * +  72 J 8 * +  8 8 rectb THEN
     LOOP
   LOOP
 ;
