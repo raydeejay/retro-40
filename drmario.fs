@@ -50,7 +50,7 @@ VARIABLE capsule-type
 VARIABLE next-capsule
 
 : move-left   ( -- )
-  capsule-x @ 1- 0 MAX
+  capsule-x @ 1- \ 0 MAX
   DUP capsule-y @ capsule-rot @ capsule-type @ 2SWAP fits? IF capsule-x ! ELSE DROP THEN
 ;
 
