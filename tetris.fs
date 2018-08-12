@@ -203,7 +203,7 @@ VARIABLE tick
 : +tick  ( -- )  tick @ 1+ 20 MOD tick ! ;
 
 : ?move  ( -- )
-  SCANCODE_Q just-pressed? IF  rotate-left   THEN
+  SCANCODE_W just-pressed? IF  rotate-left   THEN
   SCANCODE_E just-pressed? IF  rotate-right  THEN
   SCANCODE_A just-pressed? IF  move-left   THEN
   SCANCODE_D just-pressed? IF  move-right  THEN
