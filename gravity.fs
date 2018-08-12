@@ -16,6 +16,7 @@ DEFINITIONS
 
 \ an additional framebuffer to store the trails
 CREATE underlay W H * ALLOT
+: 0underlay  ( -- )  underlay W H * ERASE ;
 
 : on-field?  ( x y -- f )  0 H WITHIN  SWAP  0 W WITHIN  AND ;
 
@@ -32,6 +33,7 @@ CREATE underlay W H * ALLOT
 : particles    ( u -- u' )    5 CELLS * ;
 
 CREATE field ^particles particles ALLOT
+
 : th-particle  ( u -- addr )  particles field + ;
 
 
@@ -158,7 +160,7 @@ CREATE objects 6 CELLS ALLOT
 
 \ init
 : <init>       ( -- )
-  underlay W H * ERASE
+  0underlay
   objects
       80 S>F DUP F! CELL+
     H 2/ S>F DUP F! CELL+
