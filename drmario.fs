@@ -6,6 +6,108 @@ also drmario-voc definitions
 0 DEFINE-SFX connect.wav
 1 DEFINE-SFX zap.wav
 
+: maxrow  ( lvl -- row )
+  DUP 15 < IF DROP 10 EXIT THEN
+  DUP 17 < IF DROP 11 EXIT THEN
+      19 < IF      12 EXIT THEN
+  13
+;
+
+CREATE extra-rng  0 C, 1 C, 2 C, 2 C, 1 C, 0 C, 0 C, 1 C, 2 C, 2 C, 1 C, 0 C, 0 C, 1 C, 2 C, 1 C,
+
+: v>color  ( spr# -- c )    DUP 33 48 WITHIN IF 32 - 1- 5 / 1+ ELSE DROP 0 THEN ;
+: c>color  ( spr# -- c )    DUP 17 32 WITHIN IF 16 - 1- 5 / 1+ ELSE DROP 0 THEN ;
+: >color   ( spr# -- c )    DUP 32 > IF v>color ELSE c>color THEN ;
+
+: c>virus  ( c -- spr# )    1- 5 * 32 + 1+ ;
+
+0 CONSTANT faces-nowhere
+1 CONSTANT faces-right
+2 CONSTANT faces-left
+3 CONSTANT faces-down
+4 CONSTANT faces-up
+
+: >facing  ( spr# -- dir )  DUP 17 33 WITHIN IF 16 - 1- 5 MOD 1+ ELSE faces-nowhere THEN ;
+
+: split  ( x' y -- )
+  { x y }
+  x y M@ >facing CASE
+    faces-right OF x 1+ y    M@ 3 +   x 1+ y     M!  ENDOF
+    faces-left  OF x 1- y    M@ 4 +   x 1- y     M!  ENDOF
+    faces-down  OF x    y 1+ M@ 1 +   x    y 1+  M!  ENDOF
+    faces-up    OF x    y 1- M@ 2 +   x    y 1-  M!  ENDOF
+  ENDCASE
+;
+
+
+
+\ virus generation
+
+: fetch-far-neighbours  ( x y -- c1 c2 c3 c4 )
+  { x y }
+  x 11 + 2-  20 y    -  M@ v>color
+  x 11 + 2+  20 y    -  M@ v>color
+  x 11 +     20 y 2- -  M@ v>color
+  x 11 +     20 y 2+ -  M@ v>color
+;
+
+: check-three-colors  ( x y -- c1 c2 c3 )
+  { x y | C1 C2 C3 }
+  x y fetch-far-neighbours
+  4 0 DO
+    CASE
+      1 OF  1 TO C1  ENDOF
+      2 OF  2 TO C2  ENDOF
+      3 OF  3 TO C3  ENDOF
+    ENDCASE
+  LOOP
+  C1 C2 C3  
+;
+
+: cycle-color  ( c -- c' )  3 MOD 1+ ;
+
+\ this code uses 1-based coords?
+: gen-virus  ( lvl remaining -- remaining' )
+  { lvl rem | row col vtype c1 c2 c3 done }
+  BEGIN 16 RND 1+  DUP lvl maxrow <= UNTIL TO row
+  8 RND 1+ TO col
+  rem 4 MOD
+  DUP 3 = IF DROP  extra-rng 16 RND + C@ THEN TO vtype
+  BEGIN ( P )
+    row 1- 11 +  20 col 1- -  M@ 0<>
+  WHILE
+    row 1+ TO row
+    row  9 = IF  1 TO row  col 1+ TO col  THEN
+    col 17 = IF  rem EXIT  THEN
+  REPEAT
+  BEGIN
+    row 1- col 1- check-three-colors TO c3 TO c2 TO c1
+    \ all three colors -> look at next position
+    c1 c2 c3 + + 6 = IF
+      row 1+ TO row
+      row  9 = IF  1 TO row  col 1+ TO col  THEN
+      col 17 = IF  rem EXIT  THEN
+    THEN
+    \ otherwise, lacks current color?
+    vtype 1 =  c1 NOT  AND
+    vtype 2 =  c2 NOT  AND
+    vtype 3 =  c3 NOT  AND
+    OR OR IF  TRUE TO done ( make virus )  THEN
+    \ cycle color and check neighbours again
+    vtype cycle-color TO vtype
+    done
+  UNTIL
+  \ create virus ( offset the type by -1 ) ( why? )
+  vtype c>virus  row 1- 11 +  20 col 1- -  M!
+  \ return the new remainder
+  rem 1-  
+;
+
+: gen-bottle  ( lvl n -- ) BEGIN OVER SWAP gen-virus DUP WHILE REPEAT 2DROP ;
+
+
+\ capsules
+
 CREATE capsules
 \ single color
 HEX
@@ -23,9 +125,6 @@ DECIMAL
 
 : capsule@  ( x y rot# piece# -- )  >R >R 2 * + R> 4 * + R> 16 * + capsules + C@ ;
 
-\ TODO: use this
-: rotate-capsule  { a b c d -- c a d b }  c a d b ;
-
 : fits?   ( rot# piece# x y -- f )
   { r p x y }
   2 0 ?DO
@@ -40,9 +139,9 @@ DECIMAL
 : vertical?    ( spr# -- f )  16 - DUP  1 16 WITHIN  SWAP  5 MOD  2 >         AND ;
 : horizontal?  ( spr# -- f )  16 - DUP  1 16 WITHIN  SWAP  5 MOD  1 3 WITHIN  AND ;
 
-: >facing  ( spr# -- dir )  DUP IF 16 - 1- 5 MOD 1+ ELSE 5 THEN ;
-: >color   ( spr# -- c )    DUP IF 16 - 1- 5 / 1+ THEN ;
 
+
+\ play code
 VARIABLE capsule-x
 VARIABLE capsule-y
 VARIABLE capsule-rot
@@ -79,15 +178,6 @@ VARIABLE next-capsule
   0 capsule-rot !
 ;
 
-: split  ( x' y -- )
-  { x y }
-  x y M@ >facing CASE
-    1 OF x 1+ y    M@ 3 +   x 1+ y     M!  ENDOF
-    2 OF x 1- y    M@ 4 +   x 1- y     M!  ENDOF
-    3 OF x    y 1+ M@ 1 +   x    y 1+  M!  ENDOF
-    4 OF x    y 1- M@ 2 +   x    y 1-  M!  ENDOF
-  ENDCASE
-;
 
 : clear-field  ( -- )  20 0 DO MRAM W I * + 11 + 10 ERASE LOOP ;
 
@@ -104,7 +194,7 @@ VARIABLE tick
   SCANCODE_S pressed? IF  0 tick !  THEN
 ;
 
-
+\ gravity code
 : pull-single  ( x y -- f )
   { x y | pulled? }
   11 x + y M@
@@ -177,6 +267,7 @@ VARIABLE tick
 : gravity  ( -- f )  FALSE 10 0 DO I pull-column OR LOOP ;
 
 
+\ clearing code
 : remove-cells-h  ( x y u -- )
   0 ?DO
     2DUP  I 11 + UNDER+
@@ -290,10 +381,10 @@ VARIABLE tick
 
 : <init>  ( -- )
   0 tick !
-  new-capsule
-  next-capsule
   s" drmario.spr" load-sprites
   s" drmario.map" load-map
+  10 10 gen-bottle
+  new-capsule
 ;
 
 
