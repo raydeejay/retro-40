@@ -27,7 +27,7 @@ CREATE extra-rng  0 C, 1 C, 2 C, 2 C, 1 C, 0 C, 0 C, 1 C, 2 C, 2 C, 1 C, 0 C, 0 
 3 CONSTANT faces-down
 4 CONSTANT faces-up
 
-: >facing  ( spr# -- dir )  DUP 17 33 WITHIN IF 16 - 1- 5 MOD 1+ ELSE faces-nowhere THEN ;
+: >facing  ( spr# -- dir )  DUP 17 33 WITHIN IF 16 - 1- 5 MOD 1+ ELSE DROP faces-nowhere THEN ;
 
 : split  ( x' y -- )
   { x y }
@@ -269,6 +269,7 @@ VARIABLE tick
 
 \ clearing code
 : remove-cells-h  ( x y u -- )
+  >R SWAP 11 + SWAP R>
   0 ?DO
     2DUP  I 11 + UNDER+
     2DUP  split
@@ -293,10 +294,12 @@ VARIABLE tick
 : clear-rows  ( -- )  20 0 DO  I clear-row  LOOP ;
 
 : remove-cells-v  ( x y u -- )
+  >R SWAP 11 + SWAP R>
   0 ?DO
-    2DUP  OVER 11 +  OVER I +
-    2DUP  split
-    0 -ROT M!
+    ( x y )
+    2DUP  ( x y x y ) I + ( x y x' y' )
+    2DUP  ( x y x' y' x' y' ) split ( x y x' y' )
+    0 -ROT M! ( x y )
   LOOP 2DROP
   1 sfx
 ;
@@ -350,7 +353,6 @@ VARIABLE tick
   ?advance
   ?exit
 ;
-
 
 : draw-next-capsule  ( -- )
   2 0 DO
