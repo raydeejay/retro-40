@@ -42,6 +42,7 @@ CREATE extra-rng  0 C, 1 C, 2 C, 2 C, 1 C, 0 C, 0 C, 1 C, 2 C, 2 C, 1 C, 0 C, 0 
 
 
 \ virus generation
+\ based on https://tetris.wiki/Dr._Mario#Virus_Generation
 
 : fetch-far-neighbours  ( x y -- c1 c2 c3 c4 )
   { x y }
@@ -271,7 +272,7 @@ VARIABLE tick
 : remove-cells-h  ( x y u -- )
   >R SWAP 11 + SWAP R>
   0 ?DO
-    2DUP  I 11 + UNDER+
+    2DUP  I UNDER+
     2DUP  split
     0 -ROT M!
   LOOP 2DROP
