@@ -8,13 +8,14 @@ also detective-voc definitions
 : xy>tilexy  ( x y -- x/8 y/8 )  8 /  SWAP  8 /  SWAP ;
 : tilexy>xy  ( x/8 y/8 -- x y )  8 *  SWAP  8 *  SWAP ;
 
-: place-dude  ( -- )  11  32 RND 24 RND  M! ;
+: dude?     ( u -- )  8 12 WITHIN ;
+: place-dude  ( -- )  8 4 RND +  32 RND 24 RND  M! ;
 : reset       ( -- )  s" detective.map" load-map  place-dude ;
 : win         ( -- )  0 sfx  reset ;
 
-: check-dude  ( mx my -- f )  xy>tilexy  M@ 11 =  IF  win  THEN ;
+: check-dude  ( mx my -- f )  xy>tilexy  M@ dude?  IF  win  THEN ;
 
-: update-mouse  ( -- )  MOUSEB @ IF  MOUSEX @  MOUSEY @ check-dude  THEN ;
+: update-mouse  ( -- )  MOUSEB @ IF  MOUSEX @  MOUSEY @  check-dude  THEN ;
 : ?exit         ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
 : <update>      ( -- )  update-mouse  ?exit ;
 
