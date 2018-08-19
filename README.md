@@ -56,40 +56,28 @@ A Fantasy Computer using Forth as its system language.
 
 ## Skeleton program
 ```forth
-17 FICL-VOCABULARY detective-voc
-ALSO detective-voc DEFINITIONS
+17 FICL-VOCABULARY myprog-voc
+ALSO myprog-voc DEFINITIONS
 
+
+\ your code goes here
 
 : ?exit     ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
 
 
-: in-area?  ( x/8 y/8 -- f )    0 24 WITHIN  SWAP  0 32 WITHIN  AND ;
-: tile>xy   ( x/8 y/8 -- x y )  8 *  SWAP  8 *  SWAP ;
+\ these are the hooks that R40 expect to find
 
-\ only blit the map portion under the spotlight
-: partial-map  ( mx my -- )
-  { mx my | xc yc }
-  \ compensate for the mouse coordinates
-  mx 16 <   mx 8 MOD NOT   OR  TO xc
-  my 16 <   my 8 MOD NOT   OR  TO yc
-  mx 16 - 8 /  my 16 - 8 /   5 xc +  5 yc +  2OVER tile>xy  map*
-;
-
-\ blit the spotlight, using white as the transparent color
-: spotlight  ( mx my --)  15 colorkey !   -24 UNDER+ -24 +   6 6  16 spr*   -1 colorkey ! ;
+: <init>    ( -- )  S" myprog.spr" load-sprites  s" myprog.map" load-map  ( ... ) ;
+: <update>  ( -- )  ?exit ( ... ) ;
+: <draw>    ( -- )  ( ... )  ;
 
 
-: <init>    ( -- )  S" detective.spr" load-sprites  s" detective.map" load-map ;
-: <update>  ( -- )  ?exit ;
-: <draw>    ( -- )  0 cls  MOUSEX @ MOUSEY @ 2DUP  partial-map  spotlight ;
-
-
-\ install the software
+\ install the software ()
 PREVIOUS DEFINITIONS
 
-ALSO detective-voc
+ALSO myprog-voc
 
-INSTALL detective
+INSTALL myprog
 
 PREVIOUS
 ```
