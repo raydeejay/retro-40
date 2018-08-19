@@ -61,12 +61,10 @@ ALSO myprog-voc DEFINITIONS
 
 
 \ your code goes here
-
 : ?exit     ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
 
 
-\ these are the hooks that R40 expect to find
-
+\ these are the hooks that R40 expects to find
 : <init>    ( -- )  S" myprog.spr" load-sprites  s" myprog.map" load-map  ( ... ) ;
 : <update>  ( -- )  ?exit ( ... ) ;
 : <draw>    ( -- )  ( ... )  ;
