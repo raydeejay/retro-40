@@ -10,7 +10,7 @@ all: $(BINARY)
 ficl/libficl.a:
 	$(MAKE) -C ficl
 
-$(BINARY): api.o main.o ficl/libficl.a
+$(BINARY): tools.o api.o main.o ficl/libficl.a
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o ${BINARY}
 
 clean:
@@ -20,7 +20,7 @@ clean:
 check-syntax:
 	${CC} -Wall -pedantic ${CFLAGS} -o nul -S ${CHK_SOURCES}
 
-make.depend: main.c api.c api.h
+make.depend: main.c api.c api.h tools.c tools.h
 	touch make.depend
 	makedepend -I/usr/include/linux -I/usr/lib/gcc/x86_64-linux-gnu/5/include/ -fmake.depend $^
 

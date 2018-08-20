@@ -8,6 +8,8 @@
 #include "api.h"
 #include "ficl/ficl.h"
 
+#include "tools.h"
+
 // hardware and system variables
 unsigned char *gVRAM = NULL;
 unsigned char *gSRAM = NULL;
@@ -338,8 +340,9 @@ void R40Cls(ficlVm *vm) {
 
 
 typedef void (*R40_func)(ficlVm *vm);
+typedef struct { const char *name; R40_func fn; const char *doc; } wordEntry;
 
-struct { const char *name; R40_func fn; const char *doc; } R40_prims[] = {
+wordEntry R40_prims[] = {
     { "time",          R40Time,         "Returns the time in milliseconds (TBI from the start of the FC?)" },
     { "spr",           R40Spr,          "( x y n --)  Blits sprite N at X,Y" },
     { "spr*",          R40SprEx,        "( x y w h n -- )  Blits sprite N at X,Y with size W,H" },
@@ -417,8 +420,72 @@ void ficlPrimitiveFsqrt(ficlVm *vm) {
 }
 
 
+/* void addWord(ficlDictionary *dictionary, int type, char *name, R40_func *fn, char* help) { */
+/*     ficlDictionarySetPrimitive(dictionary, name, name, FICL_WORD_DEFAULT); */
+/* } */
+
+/* void addWordC(ficlDictionary *dictionary, int type, char *name, Uint8 *mem, char* help) { */
+/*     ficlDictionarySetConstant(dictionary, name, mem); */
+/* } */
+
+/* void addWordP(ficlDictionary *dictionary, int type, char *name, long *var, char* help) { */
+/*     ficlDictionarySetConstantPointer(dictionary, name, var); */
+/* } */
+
+
+
+// rudimentary help system
+
+
+void R40Help(ficlVm *vm) {
+    ficlString name = ficlVmGetWord(vm);
+    char *id = strndup(name.text, name.length);
+
+    // ???
+    char *line = NULL;
+    char term[128] = {0};
+    size_t len = 0;
+    size_t read = 0;
+
+    // open helf file
+    FILE *file = fopen("help.md", "r");
+    if (file == NULL) {
+        ficlVmTextOut(vm, "Error opening the help file.\n");
+        return;
+    }
+
+    // search for word heading
+    snprintf(term, 126, "## %s", id);
+    strupper(term);
+    int output = 0;
+    while ((read = getline(&line, &len, file)) != -1) {
+        if (!strncmp(line, term, strlen(term))) {
+            output = 1;
+            ficlVmTextOut(vm, "\n");
+            ficlVmTextOut(vm, line);
+            continue;
+        }
+
+        if (output) {
+            if (!strncmp(line, "--- ", 3)) {
+                break;
+            }
+            else {
+                ficlVmTextOut(vm, line);
+            }
+        }
+    }
+
+    free(line);
+    fclose(file);
+}
+
+
+
 void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsigned char *lastkeys) {
     ficlDictionary *dictionary = ficlSystemGetDictionary(system);
+
+    ficlDictionarySetPrimitive(dictionary, "HELP",  R40Help,  FICL_WORD_DEFAULT);
 
     // additions to Ficl
     ficlDictionarySetPrimitive(dictionary, "FLOOR",  ficlPrimitiveFloor,  FICL_WORD_DEFAULT);
