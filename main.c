@@ -46,6 +46,21 @@ int init()
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+int gDisplayFullscreen;
+
+void toggle_fullscreen() {
+    if (gDisplayFullscreen) {
+        SDL_SetWindowFullscreen(gWindow, NULL);
+        gDisplayFullscreen = 0;
+    }
+    else {
+        int w, h;
+        SDL_SetWindowFullscreen(gWindow, 1);
+        SDL_GetWindowSize(gWindow, &w, &h);
+        gDisplayFullscreen = 1;
+    }
+}
+
         return 0;
     }
 
@@ -212,17 +227,20 @@ int main(int argc, char* argv[]) {
                 case SDLK_ESCAPE:
                     quit = 1;
                     break;
-                    case SDLK_F5:
-                        if (e.key.keysym.mod & KMOD_CTRL) {
-                            ficlSystemDestroyVm(vm);
-                            ficlSystemDestroy(system);
+                case SDLK_F11:
+                    toggle_fullscreen();
+                    break;
+                case SDLK_F5:
+                    if (e.key.keysym.mod & KMOD_CTRL) {
+                        ficlSystemDestroyVm(vm);
+                        ficlSystemDestroy(system);
 
-                            system = ficlSystemCreate(NULL);
-                            vm = ficlSystemCreateVm(system);
+                        system = ficlSystemCreate(NULL);
+                        vm = ficlSystemCreateVm(system);
 
-                            initMachineForth(system, vm, keys, lastkeys);
-                        }
-                        break;
+                        initMachineForth(system, vm, keys, lastkeys);
+                    }
+                    break;
                 default:
                     if (e.key.keysym.sym <= 127) {
                         *k = e.key.keysym.sym;
