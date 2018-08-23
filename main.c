@@ -230,6 +230,10 @@ int main(int argc, char* argv[]) {
                         /* some SDL keys are weird */
                         if ( *k == '\\') { *k = '\''; }  /* will disable backslash... */
 
+                        if (SDL_GetModState() & KMOD_CAPS) {
+                            if ( *k >= 'a' && *k <= 'z') { *k = toupper(*k); }
+                        }
+
                         if (e.key.keysym.mod & KMOD_SHIFT) {
                             if ( *k >= 'a' && *k <= 'z') { *k = toupper(*k); }
 
