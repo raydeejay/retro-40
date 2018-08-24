@@ -7,11 +7,22 @@ also runner-voc definitions
 
 : solid?  ( tile# -- f ) 32 >= ;
 
+: intersect?  ( x0 y0 x1 y1 -- f )
+  ROT ( y1 y0 )
+  2DUP < IF SWAP THEN
+  - 0 8 WITHIN ( x0 x1 f )
+  -ROT ( f x0 x1 )
+  2DUP < IF SWAP THEN
+  - 0 8 WITHIN ( f f )
+  AND
+;
+
 0.1e FCONSTANT gravity
 
 0 VALUE tick
 0 VALUE offx
 0 VALUE offy
+0 VALUE coins
 
 VARIABLE x
 VARIABLE y
@@ -24,96 +35,123 @@ VARIABLE facing-left
 \ --------------------------------------------------
 \ entities
 \ --------------------------------------------------
+8 CELLS CONSTANT /entity
+CREATE entities 256 /entity * ALLOT
+0 VALUE #entities
 
-\ update
+1 CONSTANT type-enemy
+2 CONSTANT type-coin
 
-\ animate
-
-\ draw
-
-: intersect?  ( x0 y0 x1 y1 -- f )
-  ROT ( y1 y0 )
-  2DUP < IF SWAP THEN
-  - 0 8 WITHIN ( x0 x1 f )
-  -ROT ( f x0 x1 )
-  2DUP < IF SWAP THEN
-  - 0 8 WITHIN ( f f )
-  AND
-;
-
-
-CREATE entities 128 ALLOT
+: active@    ( entity# -- f ) /entity * entities + @ ;
+: active!    ( f entity# -- ) /entity * entities + ! ;
+: x@         ( entity# -- f ) /entity * entities + 1 CELLS+ F@ ;
+: x!         ( f entity# -- ) /entity * entities + 1 CELLS+ F! ;
+: y@         ( entity# -- f ) /entity * entities + 2 CELLS+ F@ ;
+: y!         ( f entity# -- ) /entity * entities + 2 CELLS+ F! ;
+: dx@        ( entity# -- f ) /entity * entities + 3 CELLS+ F@ ;
+: dx!        ( f entity# -- ) /entity * entities + 3 CELLS+ F! ;
+: dy@        ( entity# -- f ) /entity * entities + 4 CELLS+ F@ ;
+: dy!        ( f entity# -- ) /entity * entities + 4 CELLS+ F! ;
+: faceleft@  ( entity# -- f ) /entity * entities + 5 CELLS+ @ ;
+: faceleft!  ( f entity# -- ) /entity * entities + 5 CELLS+ ! ;
+: frame@     ( entity# -- f ) /entity * entities + 6 CELLS+ @ ;
+: frame!     ( f entity# -- ) /entity * entities + 6 CELLS+ ! ;
+: grounded@  ( entity# -- f ) /entity * entities + 7 CELLS+ @ ;
+: grounded!  ( f entity# -- ) /entity * entities + 7 CELLS+ ! ;
 
 
 \ --------------------------------------------------
 \ enemies
 \ --------------------------------------------------
-VARIABLE enemy?
-VARIABLE enemy-grounded?
-VARIABLE enemy-x
-VARIABLE enemy-y
-VARIABLE enemy-dx
-VARIABLE enemy-dy
-VARIABLE enemy-faceleft
-VARIABLE enemy-frame
 
-: walk-enemy  ( -- )  0.3e enemy-faceleft @ IF FNEGATE THEN  enemy-x F+! ;
+: walk-enemy  ( entity# -- )  >R 0.3e R@ faceleft@ IF FNEGATE THEN  R@ x@ F+ R> x! ;
 
-: accumulate-gravity-enemy  ( -- )  gravity enemy-dy F@ F0> IF 2e F* THEN enemy-dy F+! ;
-: fall-enemy                ( -- )  enemy-dy F@ enemy-y F+! ;
+: accumulate-gravity-enemy  ( entity# -- )  { e } gravity e dy@ F0> IF 2e F* THEN e dy@ F+ e dy! ;
+: fall-enemy                ( entity# -- )  { e } e dy@ e y@ F+ e y! ;
 
-: destination-down-enemy  ( -- )
-  FALSE enemy-grounded? !
-  enemy-x F@ F>S  4 +  8 /
-  enemy-y F@ F>S  8 +  8 /
-  m@
+: destination-down-enemy  ( entity# -- )
+  { e }
+  FALSE e grounded!
+  e x@ F>S  4 +  8 /
+  e y@ F>S  8 +  8 /
+  M@
 ;
 
-: ?hit-floor-enemy  ( -- )
-  enemy-dy F@ 0e F>=  destination-down-enemy solid?  AND
+: ?hit-floor-enemy  ( entity# -- )
+  { e }
+  e dy@ 0e F>=  e destination-down-enemy solid?  AND
   IF
-    enemy-y F@ 8e F/ F>S 8 * S>F enemy-y F!
-    0e enemy-dy F!
-    TRUE enemy-grounded? !
+    e y@ 8e F/ F>S 8 * S>F e y!
+    0e e dy!
+    TRUE e grounded!
   THEN
 ;
 
-: ?bounce-enemy  ( -- )
-  enemy-faceleft @ IF
-    enemy-x F@ F>S 8 / enemy-y F@ F>S 8 / M@ 1 = IF FALSE enemy-faceleft ! THEN
+: ?bounce-enemy  ( entity# -- )
+  { e }
+  e faceleft@ IF
+    e x@ F>S 8 / e y@ F>S 8 / M2@ 1 = IF FALSE e faceleft! THEN
   ELSE
-    enemy-x F@ F>S 8 / 1+ enemy-y F@ F>S 8 / M@ 1 = IF TRUE enemy-faceleft ! THEN
+    e x@ F>S 8 / 1+ e y@ F>S 8 / M2@ 1 = IF TRUE e faceleft! THEN
   THEN
 ;
 
-: ?collide-enemy  ( -- )
-        x F@ F>S        y F@ F>S
-  enemy-x F@ F>S  enemy-y F@ F>S
+: ?collide-enemy  ( entity# -- )
+  { e }
+  x F@ F>S  y F@ F>S
+  e x@ F>S  e y@ F>S
   intersect?  dy F@ 0e F>  AND IF
-    FALSE enemy? !  1 sfx
+    FALSE e active!
+    -3.1e dy F!
+    1 sfx
   THEN
 ;
 
-: ?update-enemies  ( -- )
-  enemy? @ IF
-    ?bounce-enemy
-    walk-enemy
-    accumulate-gravity-enemy
-    fall-enemy
-    ?hit-floor-enemy
-    ?collide-enemy
-    enemy-frame @ 1+ 4 8 * MOD  enemy-frame !
+: ?collide-coin  ( entity# -- )
+  { e }
+  x F@ F>S  y F@ F>S
+  e x@ F>S  e y@ F>S
+  intersect?  IF
+    FALSE e active!
+    coins 1+ TO coins
+    2 sfx
   THEN
 ;
+
+: update-enemy ( entity# -- )
+  { e }
+  e active@ CASE
+    type-enemy OF
+      e ?bounce-enemy
+      e walk-enemy
+      e accumulate-gravity-enemy
+      e fall-enemy
+      e ?hit-floor-enemy
+      e ?collide-enemy
+      e frame@ 1+ 4 8 * MOD  e frame!
+    ENDOF
+    type-coin OF
+      e ?collide-coin
+    ENDOF
+  ENDCASE
+;
+
+: ?update-enemies  ( -- ) #entities 0 ?DO  I update-enemy  LOOP ;
 
 : draw-enemies  ( -- )
-  enemy? @ IF
-    0 colorkey !
-    enemy-faceleft @ NOT IF 1 ELSE 0 THEN flip !
-    enemy-x F@ F>S offx - enemy-y F@ F>S offy -   enemy-frame @ 8 / 24 +  spr
-    0 flip !
-    -1 colorkey !
-  THEN
+  #entities 0 ?DO
+    I active@ IF
+      0 colorkey !
+      I faceleft@ NOT IF 1 ELSE 0 THEN flip !
+      I x@ F>S offx - I y@ F>S offy -
+      I active@ CASE
+        type-enemy OF  I frame@ 8 / 24 +  spr  ENDOF
+        type-coin  OF  20  spr  ENDOF
+      ENDCASE
+      0 flip !
+      -1 colorkey !
+    THEN
+  LOOP
 ;
 
 \ --------------------------------------------------
@@ -180,14 +218,13 @@ VARIABLE startx
 \ initialization
 \ --------------------------------------------------
 : init-player  ( -- )
-   16e  x F!
-   16e  y F!
-    0e dx F!
-    0e dy F!
-     0 grounded? !
-     3.8e jump-velocity F!
-     0 enemy? !
-  TRUE enemy-faceleft !
+  16e  x F!
+  16e  y F!
+  0e dx F!
+  0e dy F!
+  0 grounded? !
+  3.1e jump-velocity F!
+  0 TO coins
 ;
 
 
@@ -229,15 +266,41 @@ VARIABLE startx
   ?update-enemies
 ;
 
+\ : spawn  ( -- )
+\   offy 8 / DUP 25 UNDER+ DO
+\     offx 8 / DUP 33 UNDER+ DO
+\       enemy? @ NOT IF
+\         I J M@ 2 = IF
+\           TRUE enemy? !
+\           I 8 * S>F enemy-x F!  J 8 * S>F enemy-y F!
+\           0 sfx
+\           0 I J M!
+\         THEN
+\       THEN
+\     LOOP
+\   LOOP
+\ ;
+
+: spawn-one ( -- )
+;
+
 : spawn  ( -- )
   offy 8 / DUP 25 UNDER+ DO
     offx 8 / DUP 33 UNDER+ DO
-      enemy? @ NOT IF
-        I J M@ 2 = IF
-          TRUE enemy? !
-          I 8 * S>F enemy-x F!  J 8 * S>F enemy-y F!
-          0 sfx
+      I J M@ 2 = IF
+        #entities 256 < IF
+          type-enemy #entities active!
+          I 8 * S>F #entities x!  J 8 * S>F #entities y!
           0 I J M!
+          #entities 1+ TO #entities
+        THEN
+      THEN
+      I J M@ 20 = IF
+        #entities 256 < IF
+          type-coin #entities active!
+          I 8 * S>F #entities x!  J 8 * S>F #entities y!
+          0 I J M!
+          #entities 1+ TO #entities
         THEN
       THEN
     LOOP
@@ -252,6 +315,7 @@ VARIABLE startx
   x F@ F>S offx -  y F@ F>S offy -  tick 8 / 8 + spr
   0 flip !
   -1 colorkey !
+  0 0 at-xy s" COINS: " ?PUTS coins .
 ;
 
 : <draw>  ( -- )
