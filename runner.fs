@@ -3,6 +3,7 @@ also runner-voc definitions
 
 0 DEFINE-SFX jump.wav
 1 DEFINE-SFX zap.wav
+2 DEFINE-SFX coin.wav
 
 : solid?  ( tile# -- f ) 32 >= ;
 
