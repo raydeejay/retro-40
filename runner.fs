@@ -2,8 +2,9 @@
 also runner-voc definitions
 
 0 DEFINE-SFX jump.wav
-1 DEFINE-SFX zap.wav
+1 DEFINE-SFX stomp.wav
 2 DEFINE-SFX coin.wav
+3 DEFINE-SFX death.wav
 
 : solid?  ( tile# -- f ) 32 >= ;
 
@@ -118,7 +119,7 @@ CREATE entities 256 /entity * ALLOT
   THEN
 ;
 
-: update-enemy ( entity# -- )
+: update-entity ( entity# -- )
   { e }
   e active@ CASE
     type-enemy OF
@@ -136,7 +137,7 @@ CREATE entities 256 /entity * ALLOT
   ENDCASE
 ;
 
-: ?update-enemies  ( -- ) #entities 0 ?DO  I update-enemy  LOOP ;
+: ?update-enemies  ( -- ) #entities 0 ?DO  I update-entity  LOOP ;
 
 : draw-enemies  ( -- )
   #entities 0 ?DO
@@ -266,40 +267,22 @@ VARIABLE startx
   ?update-enemies
 ;
 
-\ : spawn  ( -- )
-\   offy 8 / DUP 25 UNDER+ DO
-\     offx 8 / DUP 33 UNDER+ DO
-\       enemy? @ NOT IF
-\         I J M@ 2 = IF
-\           TRUE enemy? !
-\           I 8 * S>F enemy-x F!  J 8 * S>F enemy-y F!
-\           0 sfx
-\           0 I J M!
-\         THEN
-\       THEN
-\     LOOP
-\   LOOP
-\ ;
-
-: spawn-one ( -- )
-;
-
 : spawn  ( -- )
   offy 8 / DUP 25 UNDER+ DO
     offx 8 / DUP 33 UNDER+ DO
-      I J M@ 2 = IF
+      I J M2@ 2 = IF
         #entities 256 < IF
           type-enemy #entities active!
           I 8 * S>F #entities x!  J 8 * S>F #entities y!
-          0 I J M!
+          0 I J M2!
           #entities 1+ TO #entities
         THEN
       THEN
-      I J M@ 20 = IF
+      I J M2@ 20 = IF
         #entities 256 < IF
           type-coin #entities active!
           I 8 * S>F #entities x!  J 8 * S>F #entities y!
-          0 I J M!
+          0 I J M2!
           #entities 1+ TO #entities
         THEN
       THEN
