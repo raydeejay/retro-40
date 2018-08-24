@@ -14,6 +14,7 @@
 unsigned char *gVRAM = NULL;
 unsigned char *gSRAM = NULL;
 unsigned char *gMRAM = NULL;
+unsigned char *gMRAM2 = NULL;
 unsigned char *gPRAM = NULL;
 unsigned char *gFONT = NULL;
 
@@ -130,6 +131,31 @@ void R40Mget(ficlVm *vm) {
 
     if (x >= 0 && x < R40_WIDTH && y >= 0 && y < R40_HEIGHT) {
         ficlStackPushInteger(vm->dataStack, gMRAM[y * R40_WIDTH + x]);
+    } else {
+        ficlStackPushInteger(vm->dataStack, 0);
+    }
+
+    return;
+}
+
+void R40Mset2(ficlVm *vm) {
+    int y = ficlStackPopInteger(vm->dataStack);
+    int x = ficlStackPopInteger(vm->dataStack);
+    Uint8 c = ficlStackPopInteger(vm->dataStack);
+
+    if (x >= 0 && x < R40_WIDTH && y >= 0 && y < R40_HEIGHT) {
+        gMRAM2[y * R40_WIDTH + x] = (Uint8) c;
+    }
+
+    return;
+}
+
+void R40Mget2(ficlVm *vm) {
+    int y = ficlStackPopInteger(vm->dataStack);
+    int x = ficlStackPopInteger(vm->dataStack);
+
+    if (x >= 0 && x < R40_WIDTH && y >= 0 && y < R40_HEIGHT) {
+        ficlStackPushInteger(vm->dataStack, gMRAM2[y * R40_WIDTH + x]);
     } else {
         ficlStackPushInteger(vm->dataStack, 0);
     }
@@ -268,6 +294,41 @@ void R40MapEx(ficlVm *vm) {
     blitMap(x, y, w, h, sx, sy);
 }
 
+
+static void blitMap2(int x, int y, int w, int h, int sx, int sy) {
+    // force the scale back to 1 for now
+    // should ignore the other variables... let's force-reset them as well
+    // don't touch the colorKey, though
+    scale = 1;
+    flip = 0;
+    rotate = 0;
+
+    for (int j = 0; j < h; ++j) {
+        for (int i = 0; i < w; ++i) {
+            int tile = gMRAM2[(j+y)*R40_WIDTH + i+x];
+            blitSpriteEx(tile, i * 8 + sx, j * 8 + sy, 1, 1);
+        }
+    }
+}
+
+void R40Map2(ficlVm *vm) {
+    int y = (int) ficlStackPopInteger(vm->dataStack);
+    int x = (int) ficlStackPopInteger(vm->dataStack);
+
+    blitMap2(x, y, 32, 24, 0, 0);
+}
+
+void R40MapEx2(ficlVm *vm) {
+    int sy = (int) ficlStackPopInteger(vm->dataStack);
+    int sx = (int) ficlStackPopInteger(vm->dataStack);
+    int h = (int) ficlStackPopInteger(vm->dataStack);
+    int w = (int) ficlStackPopInteger(vm->dataStack);
+    int y = (int) ficlStackPopInteger(vm->dataStack);
+    int x = (int) ficlStackPopInteger(vm->dataStack);
+
+    blitMap2(x, y, w, h, sx, sy);
+}
+
 // needs indexed PNGs
 void R40ImportSprite(ficlVm *vm) {
     int n = (int) ficlStackPopInteger(vm->dataStack);
@@ -348,10 +409,14 @@ wordEntry R40_prims[] = {
     { "spr*",          R40SprEx,        "( x y w h n -- )  Blits sprite N at X,Y with size W,H" },
     { "map",           R40Map,          "( x y -- )  Blits 32x24 tiles starting from X,Y to the screen at 0,0" },
     { "map*",          R40MapEx,        "( x y w h sx sy --)  Blits WxH tiles starting from X,Y to the screen at SX,SY" },
+    { "map2",           R40Map2,          "( x y -- )  Blits 32x24 tiles starting from X,Y to the screen at 0,0" },
+    { "map2*",          R40MapEx2,        "( x y w h sx sy --)  Blits WxH tiles starting from X,Y to the screen at SX,SY" },
     { "p!",            R40Pset,         "(pix x y c) Sets the pixel at x,y to color c" },
     { "p@",            R40Pget,         "(pix x y) Gets the pixel at x,y" },
     { "m!",            R40Mset,         "(mapx x y c) Sets the tile at x,y to sprite c" },
     { "m@",            R40Mget,         "(map x y) Gets the tile at x,y" },
+    { "m2!",           R40Mset2,        "(mapx x y c) Sets the tile at x,y to sprite c" },
+    { "m2@",           R40Mget2,        "(map x y) Gets the tile at x,y" },
     { "sp!",           R40SPset,        "(spix n x y c) Sets the pixel of sprite n at x,y to color c" },
     { "sp@",           R40SPget,        "(spix n x y) Gets the pixel of sprite n at x,y" },
     { "import-sprite", R40ImportSprite, "(import-sprite filename) Loads an image from filename into the sprite memory" },
@@ -505,6 +570,7 @@ void initMachineForth(ficlSystem *system, ficlVm *vm, unsigned char *keys, unsig
     ficlDictionarySetConstantPointer(dictionary, "VRAM",      gVRAM);
     ficlDictionarySetConstantPointer(dictionary, "SRAM",      gSRAM);
     ficlDictionarySetConstantPointer(dictionary, "MRAM",      gMRAM);
+    ficlDictionarySetConstantPointer(dictionary, "MRAM2",     gMRAM2);
     ficlDictionarySetConstantPointer(dictionary, "FONT",      gFONT);
     ficlDictionarySetConstantPointer(dictionary, "KEYS",      keys);
     ficlDictionarySetConstantPointer(dictionary, "OLDKEYS",   lastkeys);

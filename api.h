@@ -16,6 +16,7 @@
 extern unsigned char *gVRAM;
 extern unsigned char *gSRAM;
 extern unsigned char *gMRAM;
+extern unsigned char *gMRAM2;
 extern unsigned char *gPRAM;
 extern unsigned char *gFONT;
 
