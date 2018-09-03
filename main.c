@@ -39,14 +39,13 @@ int gMaxSfx = -1;
 
 SDL_Texture *gCanvas = NULL;
 
+
+
 /*************************************************
  ** MAIN CODE
  ************************************************/
-int init()
-{
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
 int gDisplayFullscreen;
+
 
 void toggle_fullscreen() {
     if (gDisplayFullscreen) {
@@ -61,6 +60,10 @@ void toggle_fullscreen() {
     }
 }
 
+int init()
+{
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_VIDEO_OPENGL | SDL_INIT_AUDIO) < 0) {
+        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         return 0;
     }
 
@@ -82,13 +85,16 @@ void toggle_fullscreen() {
         return 0;
     }
 
-    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED /* | SDL_RENDERER_PRESENTVSYNC */);
+//    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE /* | SDL_RENDERER_PRESENTVSYNC */);
+
     if (gRenderer == NULL) {
         printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
         return 0;
     }
 
     SDL_RenderSetLogicalSize(gRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
 
     int imgFlags = IMG_INIT_PNG;
     if (!(IMG_Init(imgFlags) & imgFlags)) {
