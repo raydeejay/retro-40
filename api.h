@@ -27,6 +27,8 @@ extern long gMouseX;
 extern long gMouseY;
 extern long gMouseButtons;
 
+extern long currentPalette;
+
 extern int outputAvailable;
 
 extern void R40TextOut(ficlCallback *callback, char *text);

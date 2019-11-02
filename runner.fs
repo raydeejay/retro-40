@@ -24,6 +24,12 @@ also runner-voc definitions
 0 VALUE offx
 0 VALUE offy
 0 VALUE coins
+0 VALUE score
+0 VALUE player-state
+
+0 CONSTANT state-playing
+1 CONSTANT state-dying
+
 
 VARIABLE x
 VARIABLE y
@@ -64,13 +70,18 @@ CREATE entities 256 /entity * ALLOT
 \ --------------------------------------------------
 \ enemies
 \ --------------------------------------------------
+: kill-player  ( -- )
+  3 sfx
+  state-dying TO player-state
+  dy F@ jump-velocity F@ F-  dy F!
+;
 
 : walk-enemy  ( entity# -- )  >R 0.3e R@ faceleft@ IF FNEGATE THEN  R@ x@ F+ R> x! ;
 
 : accumulate-gravity-enemy  ( entity# -- )  { e } gravity e dy@ F0> IF 2e F* THEN e dy@ F+ e dy! ;
 : fall-enemy                ( entity# -- )  { e } e dy@ e y@ F+ e y! ;
 
-: destination-down-enemy  ( entity# -- )
+: destination-down-enemy  ( entity# -- tile )
   { e }
   FALSE e grounded!
   e x@ F>S  4 +  8 /
@@ -101,10 +112,15 @@ CREATE entities 256 /entity * ALLOT
   { e }
   x F@ F>S  y F@ F>S
   e x@ F>S  e y@ F>S
-  intersect?  dy F@ 0e F>  AND IF
-    FALSE e active!
-    -3.1e dy F!
-    1 sfx
+  intersect?  IF
+    dy F@ 0e F>  IF
+      FALSE e active!
+      -3.1e dy F!
+      score 100 + TO score
+      1 sfx
+    ELSE
+      kill-player
+    THEN
   THEN
 ;
 
@@ -180,7 +196,8 @@ VARIABLE startx
 : fall                ( -- )  dy F@ y F+! ;
 
 : destination-down  ( -- )
-  FALSE grounded? !
+  \ FALSE grounded? !
+  grounded? @ 1- 0 MAX grounded? !
   x F@ F>S  4 +  8 /
   y F@ F>S  8 +  8 /
   m@
@@ -191,14 +208,14 @@ VARIABLE startx
   IF
     y F@ 8e F/ F>S 8 * S>F y F!
     0e dy F!
-    TRUE grounded? !
+    12 grounded? !
   THEN
 ;
 
 \ moving upwards
 : ?jump  ( -- )
   SCANCODE_SPACE just-pressed?  grounded? @  AND
-  IF  dy F@ jump-velocity F@ F-  dy F!  0 sfx  THEN
+  IF  0 grounded? !  dy F@ jump-velocity F@ F-  dy F!  0 sfx  THEN
 ;
 
 : destination-up  ( -- )
@@ -219,42 +236,32 @@ VARIABLE startx
 \ initialization
 \ --------------------------------------------------
 : init-player  ( -- )
-  16e  x F!
-  16e  y F!
+   4e 8e F* x F!
+   8e 8e F* y F!
   0e dx F!
   0e dy F!
   0 grounded? !
   3.1e jump-velocity F!
   0 TO coins
+  0 TO score
 ;
 
 
-\ hooks
-: <init>  ( -- )
-  s" runner.spr" load-sprites
-  s" runner.map" load-map
-  init-player
-;
 
 \ --------------------------------------------------
 \ game stuff
 \ --------------------------------------------------
 : ?exit  ( -- )  SCANCODE_Q pressed? IF  retro-40  THEN ;
 
-: calculate-offsets  ( -- )
-  \ determine horizontal offset
-  x F@ F>S W 2/ -
-  DUP  0< IF DROP 0 THEN
-  DUP  W 8 * W - > IF DROP W 8 * W - THEN
-  TO offx
-  \ determine vertical offset ( you may want to place the line other than in the middle )
-  y F@ F>S H 2/ -
-  DUP  0< IF DROP 0 THEN
-  DUP  H 8 * H - > IF DROP H 8 * H - THEN
-  TO offy
+: <init>  ( -- )
+  s" runner.spr" load-sprites
+  s" runner.map" load-map
+  0 TO #entities
+  state-playing TO player-state
+  init-player
 ;
 
-: <update>  ( -- )
+: update-playing
   ?jump
   walk
   move
@@ -265,6 +272,25 @@ VARIABLE startx
   ?hit-ceiling
   ?exit
   ?update-enemies
+;
+
+: update-dying
+  \ without updating the camera or reacting to input,
+  \ probably without moving the enemies as well:
+  \ move upwards,
+  \ THEN move downwards,
+  \ THEN when the player is offscreen, wait a bit and reset
+  accumulate-gravity
+  fall
+  dy F@ 10e F> IF  <init>  THEN
+;
+
+
+: <update>  ( -- )
+  player-state CASE
+    state-playing OF update-playing ENDOF
+    state-dying   OF update-dying   ENDOF
+  ENDCASE
 ;
 
 : spawn  ( -- )
@@ -290,6 +316,19 @@ VARIABLE startx
   LOOP
 ;
 
+: calculate-offsets  ( -- )
+  \ determine horizontal offset
+  x F@ F>S W 2/ -
+  DUP  0< IF DROP 0 THEN
+  DUP  W 8 * W - > IF DROP W 8 * W - THEN
+  TO offx
+  \ determine vertical offset ( you may want to place the line other than in the middle )
+  y F@ F>S H 2/ -
+  DUP  0< IF DROP 0 THEN
+  DUP  H 8 * H - > IF DROP H 8 * H - THEN
+  TO offy
+;
+
 : draw-map  ( -- )  offx 8 /  offy 8 /  33 25  offx 8 MOD NEGATE offy 8 MOD NEGATE  map* ;
 
 : draw-player  ( -- )
@@ -304,7 +343,7 @@ VARIABLE startx
 : <draw>  ( -- )
   0 cls
   \ apply offset
-  calculate-offsets
+  player-state state-playing = IF calculate-offsets THEN
   draw-map
   spawn
   draw-player

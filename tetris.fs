@@ -3,7 +3,8 @@
 17 ficl-vocabulary tetris-voc
 also tetris-voc definitions
 
-0 DEFINE-SFX jump.wav
+0 DEFINE-SFX connect.wav
+1 DEFINE-SFX zap.wav
 
 CREATE shapes
 1 C, 0 C, 0 C, 0 C,
@@ -182,8 +183,15 @@ VARIABLE next-piece
   DUP piece-y @ piece-rot @ piece-type @ 2SWAP fits? IF piece-x ! ELSE DROP THEN
 ;
 
-: rotate-left   ( -- )  piece-rot @ 4 + 1- 4 MOD piece-rot ! ;
-: rotate-right  ( -- )  piece-rot @ 4 + 1+ 4 MOD piece-rot ! ;
+: rotate-left   ( -- )
+  piece-rot @ 4 + 1- 4 MOD DUP
+  piece-type @ piece-x @ piece-y @ fits? IF piece-rot ! ELSE DROP THEN
+;
+
+: rotate-right  ( -- )
+  piece-rot @ 4 + 1+ 4 MOD DUP
+  piece-type @ piece-x @ piece-y @ fits? IF piece-rot ! ELSE DROP THEN
+;
 
 : advance  ( -- )  1 piece-y +! ;
 
@@ -207,7 +215,7 @@ VARIABLE tick
   SCANCODE_E just-pressed? IF  rotate-right  THEN
   SCANCODE_A just-pressed? IF  move-left   THEN
   SCANCODE_D just-pressed? IF  move-right  THEN
-  SCANCODE_S pressed? IF  1 tick +!  THEN
+  SCANCODE_S pressed? IF  0 tick !  THEN
 ;
 
 : full-line?  ( y -- f )
@@ -223,7 +231,7 @@ VARIABLE tick
       -1 +LOOP
     THEN
   LOOP 
-
+  1 sfx
 ;
 
 : persist-piece  ( -- )
@@ -234,6 +242,7 @@ VARIABLE tick
       THEN
     LOOP
   LOOP
+  0 sfx
 ;
 
 : ?advance  ( -- )

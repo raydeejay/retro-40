@@ -1,7 +1,7 @@
 BINARY=retro40
 CC=gcc
 CFLAGS=-O2 -g -Wall -pedantic `sdl2-config --cflags`
-LDFLAGS=-lm `sdl2-config --libs` -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+LDFLAGS=-lm `sdl2-config --libs` -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lGL
 
 .PHONY: clean
 

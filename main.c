@@ -13,6 +13,8 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
+#include <GL/gl.h>
+
 #include "ficl/ficl.h"
 #include "api.h"
 
@@ -62,7 +64,7 @@ void toggle_fullscreen() {
 
 int init()
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_VIDEO_OPENGL | SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO /* | SDL_VIDEO_OPENGL */ | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         return 0;
     }
@@ -127,7 +129,14 @@ int init()
     // map ram
     gMRAM = malloc(R40_WIDTH * R40_HEIGHT);
     memset(gMRAM, 0, R40_WIDTH * R40_HEIGHT);
-    
+
+    gMRAM2 = malloc(R40_WIDTH * R40_HEIGHT);
+    memset(gMRAM2, 0, R40_WIDTH * R40_HEIGHT);
+
+    // palette ram
+    gPRAM = malloc(16 * 16 * 3);
+    memset(gPRAM, 0, 16 * 16 * 3);
+
     return 1;
 }
 
@@ -136,6 +145,7 @@ void myclose()
     SDL_DestroyTexture(gCanvas);
     /* free(gSRAM); */
     /* free(gVRAM); */
+    /* free(gPRAM); */
     /* free(gFONT); */
 
     //Free loaded images
@@ -169,7 +179,6 @@ void myclose()
 int main(int argc, char* argv[]) {
     ficlSystem *system = ficlSystemCreate(NULL);
     ficlVm *vm = ficlSystemCreateVm(system);
-//    ficlDictionary *dictionary = ficlSystemGetDictionary(system);
 
     //Start up SDL and create window
     if (!init())
@@ -206,11 +215,6 @@ int main(int argc, char* argv[]) {
 
     // enable output to the SDL terminal
     outputAvailable = 1;
-    
-    // maybe cache update's XT ?
-    /* ficlString updatefs; */
-    /* FICL_STRING_SET_FROM_CSTRING(updatefs, "update"); */
-    /* int updateXT = ficlDictionaryLookup(dictionary, updatefs); */
 
     //Start counting frames per second
     int countedFrames = 0;
@@ -286,7 +290,7 @@ int main(int argc, char* argv[]) {
                         }
                         ++k;
                     }
-                    
+
                     break;
                 }
             }
@@ -302,13 +306,12 @@ int main(int argc, char* argv[]) {
 
         gMouseX = x / SCREEN_SCALE;
         gMouseY = y / SCREEN_SCALE;
-        
+
         //Clear screen
         //SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
         //SDL_RenderClear(gRenderer);
 
         // run forth hook
-        /* ficlVmExecuteXT(vm, updateXT); */
         ficlVmEvaluate(vm, "update");
 
         // store the keys pressed this cycle as the old keys for the next cycle
@@ -345,12 +348,16 @@ int main(int argc, char* argv[]) {
                 pixels = (Uint8*) px + (y * pitch);
 
                 for (int x = 0; x < R40_WIDTH; ++x) {
-                    int c = gVRAM[y * R40_WIDTH + x];
+                    int c = gVRAM[y * R40_WIDTH + x] * 3;
                     // the format of the texture is ABGR
-                    pixels[(x * 4)]     = 0;
-                    pixels[(x * 4) + 1] = palette[c][2];
-                    pixels[(x * 4) + 2] = palette[c][1];
-                    pixels[(x * 4) + 3] = palette[c][0];
+                    /* pixels[(x * 4)]     = 0; */
+                    /* pixels[(x * 4) + 1] = palette[c][2]; */
+                    /* pixels[(x * 4) + 2] = palette[c][1]; */
+                    /* pixels[(x * 4) + 3] = palette[c][0]; */
+                    pixels[(x * 4) ]     = 0;
+                    pixels[(x * 4) + 1 ] = gPRAM[c+2];
+                    pixels[(x * 4) + 2 ] = gPRAM[c+1];
+                    pixels[(x * 4) + 3 ] = gPRAM[c];
                 }
             }
             SDL_UnlockTexture(gCanvas);

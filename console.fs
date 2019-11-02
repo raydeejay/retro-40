@@ -100,8 +100,8 @@ CREATE logo
     DROP
     undraw-cursor
     0 sx !  1 sy +!
-    exec-cmdline
     ?scroll
+    exec-cmdline
     EXIT
   THEN
 
@@ -109,8 +109,8 @@ CREATE logo
     DROP
     undraw-cursor
     0 sx !   1 sy +!
-    exec-cmdline
     ?scroll
+    exec-cmdline
     EXIT
   THEN
 

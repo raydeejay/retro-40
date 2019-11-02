@@ -32,23 +32,26 @@ VARIABLE sprite#
 ;
 
 
-\ editor
-: paint-pixel  ( x y -- )  color# @  -ROT  sprite# @ sp! ;
-: clear-pixel  ( x y -- )         0  -ROT  sprite# @ sp! ;
-
+\ screen areas
 : draw-area?     ( x y -- f )   8  72 WITHIN  SWAP   8  72 WITHIN  AND ;
-: palette-area?  ( x y -- f )  72 104 WITHIN  SWAP   0  32 WITHIN  AND ;
-: sheet-area?    ( x y -- f )   8 136 WITHIN  SWAP  88 216 WITHIN  AND ;
-
 : clicked-pixel   ( x y -- u )  8 - 8 /  SWAP  8 - 8 /  SWAP  ;
+
+: palette-area?  ( x y -- f )  72 104 WITHIN  SWAP   0  32 WITHIN  AND ;
 : clicked-color   ( x y -- u )  72 - 8 / 4 *  SWAP 8 / +  ;
+
+: sheet-area?    ( x y -- f )   8 136 WITHIN  SWAP  88 216 WITHIN  AND ;
 : clicked-sprite  ( x y -- u )  8 - 8 / 16 *  SWAP 88 - 8 / +  ;
 
+\ actions
+: paint-pixel  ( x y -- )  color# @  -ROT  sprite# @ sp! ;
+: clear-pixel  ( x y -- )         0  -ROT  sprite# @ sp! ;
 : +color   ( -- )   color# @ 1+  16 MOD        color# ! ;
 : -color   ( -- )   color# @ 1-  16 MOD 0 MAX  color# ! ;
 : +sprite  ( -- )  sprite# @ 1+ 256 MOD       sprite# ! ;
 : -sprite  ( -- )  sprite# @ 1- 256 MOD 0 MAX sprite# ! ;
 
+
+\ input handler
 : update-mouse  ( -- )
   MOUSEX @ MOUSEY @ draw-area? IF
     MOUSEB @ CASE
@@ -85,6 +88,8 @@ VARIABLE sprite#
 ;
 
 : <update>  ( -- )  update-mouse update-keys ;
+
+
 
 : zoomed-display
   6 7 7 66 66 rectb

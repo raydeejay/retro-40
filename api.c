@@ -23,6 +23,8 @@ long  gMouseX = 0;
 long  gMouseY = 0;
 long  gMouseButtons = 0;
 
+long currentPalette = 0;
+
 // ugh...
 long sx = 0;
 long sy = 0;
@@ -72,9 +74,12 @@ void R40TextOut(ficlCallback *callback, char *text) {
         if (*k == 10 || *k == 13) {
             sx = 0;
             ++sy;
+            maybeScroll();
         }
-        else if (*k < 128) {
-            blitChar(*k);
+        else {
+            if (*k < 128) {
+                blitChar(*k);
+            }
             moveCursor();
         }
         ++k;
@@ -193,6 +198,33 @@ void R40SPget(ficlVm *vm) {
     } else {
         ficlStackPushInteger(vm->dataStack, 0);
     }
+    return;
+}
+
+void R40PalSet(ficlVm *vm) {
+    int p = (int) ficlStackPopInteger(vm->dataStack);
+    int i = (int) ficlStackPopInteger(vm->dataStack);
+    char b = (char) ficlStackPopInteger(vm->dataStack);
+    char g = (char) ficlStackPopInteger(vm->dataStack);
+    char r = (char) ficlStackPopInteger(vm->dataStack);
+
+    int pos = p * 16 * 3 + i * 3;
+
+    gPRAM[pos] = r;
+    gPRAM[pos+1] = g;
+    gPRAM[pos+2] = b;
+    return;
+}
+
+void R40PalGet(ficlVm *vm) {
+    int p = (int) ficlStackPopInteger(vm->dataStack);
+    int i = (int) ficlStackPopInteger(vm->dataStack);
+
+    int pos = p * 16 * 3 + i * 3;
+
+    ficlStackPushInteger(vm->dataStack, gPRAM[pos]);
+    ficlStackPushInteger(vm->dataStack, gPRAM[pos+1]);
+    ficlStackPushInteger(vm->dataStack, gPRAM[pos+2]);
     return;
 }
 
@@ -419,6 +451,8 @@ wordEntry R40_prims[] = {
     { "m2@",           R40Mget2,        "(map x y) Gets the tile at x,y" },
     { "sp!",           R40SPset,        "(spix n x y c) Sets the pixel of sprite n at x,y to color c" },
     { "sp@",           R40SPget,        "(spix n x y) Gets the pixel of sprite n at x,y" },
+    { "pal!",          R40PalSet,         "(pix x y c) Sets the pixel at x,y to color c" },
+    { "pal@",          R40PalGet,         "(pix x y) Gets the pixel at x,y" },
     { "import-sprite", R40ImportSprite, "(import-sprite filename) Loads an image from filename into the sprite memory" },
     { "define-sfx",    R40DefineSfx,    "(define-sfx filename) Loads a sound effect from filename, returning it's handle" },
     { "sfx",           R40Sfx,          "(sfx id) Plays the sound efect with number id" },
